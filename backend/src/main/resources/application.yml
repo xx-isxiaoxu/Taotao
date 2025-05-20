@@ -16,3 +16,13 @@ mybatis:
 jwt:
   SING: "ptu11380925"
   expireTime: 30
+
+pagehelper:
+  reasonable: true
+  support-methods-arguments: true
+  params: count=countsql
+
+file:
+  save-path: "F:/dianshang(6)/dianshang/TaotaoBackend/backend/src/main/resources/static/images/"
+image:
+  prefix-url: "http://localhost:8080/images/"
