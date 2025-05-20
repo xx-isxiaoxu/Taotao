@@ -9,3 +9,7 @@ spring:
     username: root # 数据库用户名
     password: '123456' # 数据库密码，请替换为您的实际密码
     driver-class-name: com.mysql.cj.jdbc.Driver # MySQL 驱动类名
+
+
+mybatis:
+  mapper-locations: classpath:/mapper/*
