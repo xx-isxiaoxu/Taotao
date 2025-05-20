@@ -1,11 +1,18 @@
 server:
-  port: 8080 # 应用运行端口
+  port: 8080
 
 spring:
   application:
-    name: taotaomall # 应用名称
+    name: taotaomall
   datasource:
-    url: jdbc:mysql://localhost/taotaobusiness?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8 # MySQL 数据库连接 URL，请替换为您的实际地址和端口
-    username: root # 数据库用户名
-    password: '123456' # 数据库密码，请替换为您的实际密码
-    driver-class-name: com.mysql.cj.jdbc.Driver # MySQL 驱动类名
+    url: jdbc:mysql://localhost/taotaobusiness?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: '123456'
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis:
+  mapper-locations: classpath:/mapper/*
+
+jwt:
+  SING: "ptu11380925"
+  expireTime: 30
