@@ -94,10 +94,17 @@ const router = createRouter({
 
 // 修改路由守卫实现方式
 router.beforeEach(async (to, from, next) => {
-  // 在路由守卫内部动态引入store
   const { useUserStore } = await import('@/stores/user')
   const userStore = useUserStore()
-  
+
+  // 优先从 localStorage 读取 token，防止刷新丢失
+  if (!userStore.token) {
+    const token = localStorage.getItem('token')
+    if (token) {
+      userStore.setToken(token)
+    }
+  }
+
   if (to.meta.requiresAuth && !userStore.token) {
     next('/login')
   } else {

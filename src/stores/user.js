@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { register, login } from '@/api/user'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -116,5 +117,30 @@ export const useUserStore = defineStore('user', {
       this.userInfo = { ...this.userInfo, ...info }
       localStorage.setItem('userInfo', JSON.stringify(this.userInfo))
     },
+
+    async registerUser(userData) {
+      try {
+        const res = await register(userData)
+        // 处理返回数据，比如保存token、用户信息等
+        return res.data
+      } catch (err) {
+        throw err
+      }
+    },
+
+    async loginUser(userData) {
+      try {
+        const res = await login(userData)
+        // 这里保存 token
+        if (res.data && res.data.data && res.data.data.token) {
+          this.setToken(res.data.data.token)
+          // 如果有 setUserInfo 也可以保存用户信息
+          // this.setUserInfo(res.data.data)
+        }
+        return res.data
+      } catch (err) {
+        throw err
+      }
+    }
   }
 })
