@@ -6,8 +6,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import taotaomall.model.User;
 import taotaomall.service.UserService;
+import taotaomall.utils.JWTUtils;
 import taotaomall.utils.Result;
 import taotaomall.utils.ResultCodeEnum;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")   //127.0.0.1:8080/user/
@@ -35,10 +39,10 @@ public class UserController {
         }
         else
         {
-            String token = JWTUtils.getToken(userformjdbc.getUaccount(),userformjdbc.getUname());
+            String token = JWTUtils.getToken(String.valueOf(userformjdbc.getId()),userformjdbc.getUsername());
             Map<String, String> userMap = new HashMap<String, String>();
-            userMap.put("userId",userformjdbc.getUaccount());
-            userMap.put("userName",userformjdbc.getUname());
+            userMap.put("userId", String.valueOf(userformjdbc.getId()));
+            userMap.put("userName",userformjdbc.getUsername());
             userMap.put("token",token);
             return Result.success(userMap);
         }
