@@ -88,7 +88,10 @@ const handleRegister = async () => {
     if (valid) {
       loading.value = true
       try {
-        await userStore.register(registerForm.username, registerForm.password)
+        const res = await userStore.registerUser({
+          username: registerForm.username,
+          password: registerForm.password
+        })
         ElMessage.success('注册成功')
         router.push('/home')
       } catch (error) {

@@ -75,7 +75,11 @@ const handleLogin = async () => {
     await loginFormRef.value.validate()
     loading.value = true
     
-    await userStore.login(loginForm.username, loginForm.password)
+    const res = await userStore.loginUser({
+      username: loginForm.username,
+      password: loginForm.password
+    })
+    console.log('登录返回', res)
     ElMessage.success('登录成功')
     router.push('/home')
   } catch (error) {

@@ -10,6 +10,7 @@ import taotaomall.utils.JWTUtils;
 import taotaomall.utils.Result;
 import taotaomall.utils.ResultCodeEnum;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ public class UserController {
     @PostMapping(value = "/register")
     public Result<User> register(@RequestBody User user)
     {
+        user.setCreateTime(new Date());
         if(userService.registerService(user) != null)
         {
             return Result.success(user);
