@@ -1,18 +1,32 @@
 server:
-  port: 8080 # 应用运行端口
+  port: 8080
 
 spring:
   application:
-    name: taotaomall # 应用名称
+    name: taotaomall
   datasource:
-    url: jdbc:mysql://localhost/taotaobusiness?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8 # MySQL 数据库连接 URL，请替换为您的实际地址和端口
-    username: root # 数据库用户名
-    password: '123456' # 数据库密码
-    driver-class-name: com.mysql.cj.jdbc.Driver # MySQL 驱动类名
+    url: jdbc:mysql://localhost/taotaobusiness?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
 mybatis:
-  mapper-locations: classpath:/mapper/*
+  type-aliases-package: taotaomall.model
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 jwt:
-  SING: "ptu11380925" #密钥
-  expireTime: 30 #token有效时间 (分钟)
+  SING: "ptu11380925"
+  expireTime: 30
+
+pagehelper:
+  reasonable: true
+  support-methods-arguments: true
+  params: count=countsql
+
+file:
+  save-path: "F:/dianshang(6)/dianshang/TaotaoBackend/backend/src/main/resources/static/images/"
+image:
+  prefix-url: "http://localhost:8080/images/"
