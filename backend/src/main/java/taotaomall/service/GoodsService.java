@@ -3,7 +3,7 @@ package taotaomall.service;
 import com.github.pagehelper.PageInfo;
 import taotaomall.model.Goods;
 
-public interface GoodService {
+public interface GoodsService {
     /**
      * 分页获取所有商品
      */

@@ -7,13 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import taotaomall.dao.GoodsDao;
 import taotaomall.model.Goods;
-import taotaomall.service.GoodService;
+import taotaomall.service.GoodsService;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
 @Service
-public class GoodServiceImpl implements GoodService {
+public class GoodsServiceImpl implements GoodsService {
 
     @Autowired
     private GoodsDao goodsDao;
