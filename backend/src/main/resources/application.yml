@@ -17,3 +17,6 @@ mybatis:
 jwt:
   SING: "ptu11380925" #密钥
   expireTime: 30 #token有效时间 (分钟)
+
+image:
+  prefix-url: "http://127.0.0.1:8080/img"

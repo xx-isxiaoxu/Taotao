@@ -18,7 +18,7 @@ public class GoodsServiceImpl implements GoodsService {
     @Autowired
     private GoodsDao goodsDao;
 
-    @Value("${image.url}")
+    @Value("${image.prefix-url}")
     private String imgUrl;
 
     @Override
