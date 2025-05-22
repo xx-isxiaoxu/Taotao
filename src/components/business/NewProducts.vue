@@ -13,21 +13,21 @@
     </div>
     
     <div class="products-grid">
-      <div v-for="product in filteredProducts" 
-           :key="product.id" 
+      <div v-for="product in products" 
+           :key="product.gid" 
            class="product-card">
         <div class="product-image">
-          <img :src="product.image" :alt="product.name">
+          <img :src="product.gpicture" :alt="product.gname">
           <div class="new-tag">新品</div>
         </div>
         <div class="product-info">
-          <h3>{{ product.name }}</h3>
-          <p>{{ product.description }}</p>
-          <div class="price">¥{{ product.price }}</div>
-          <el-button type="primary" :style="btnStyle" @click="router.push(`/product/${product.id}`)">
+          <h3>{{ product.gname }}</h3>
+          <p>{{ product.gdetails }}</p>
+          <div class="price">¥{{ product.gprice }}</div>
+          <el-button type="primary" :style="btnStyle" @click="router.push(`/product/${product.gid}`)">
             立即购买
           </el-button>
-          <el-button type="info" plain style="margin-left: 10px;" :style="btnStyle" @click="router.push(`/product/${product.id}`)">
+          <el-button type="info" plain style="margin-left: 10px;" :style="btnStyle" @click="router.push(`/product/${product.gid}`)">
             更多
           </el-button>
         </div>
@@ -43,6 +43,13 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const activeTab = ref(1)
 
+const props = defineProps({
+  products: {
+    type: Array,
+    default: () => []
+  }
+})
+
 const tabs = ref([
   { id: 1, name: '全部' },
   { id: 2, name: '电脑办公' },
@@ -52,92 +59,9 @@ const tabs = ref([
   { id: 6, name: '美妆个护' }
 ])
 
-const products = ref([
-  {
-    id: 1,
-    name: '拯救者Y9000P',
-    description: '搭载最新第13代处理器',
-    price: 8999,
-    image: '/Images/y9000p.jpg',
-    category: 2
-  },
-  {
-    id: 2,
-    name: '华为Mate60',
-    description: '全新麒麟芯片，5G旗舰',
-    price: 6999,
-    image: '/Images/mate60.jpg',
-    category: 3
-  },
-  {
-    id: 3,
-    name: '戴森吸尘器V12',
-    description: '无线手持，强劲吸力',
-    price: 3299,
-    image: '/Images/dyson-v12.jpg',
-    category: 4
-  },
-  {
-    id: 4,
-    name: '优衣库男士T恤',
-    description: '舒适纯棉，夏日必备',
-    price: 99,
-    image: '/Images/uniqlo-tshirt.jpg',
-    category: 5
-  },
-  {
-    id: 5,
-    name: 'SK-II神仙水',
-    description: '焕活肌肤，明星单品',
-    price: 1080,
-    image: '/Images/sk2.jpg',
-    category: 6
-  },
-  {
-    id: 6,
-    name: '小米平板6',
-    description: '高刷大屏，影音娱乐',
-    price: 2499,
-    image: '/Images/xiaomi-pad6.jpg',
-    category: 2
-  },
-  {
-    id: 7,
-    name: '索尼微单A7M4',
-    description: '全画幅，专业摄影',
-    price: 15999,
-    image: '/Images/sony-a7m4.jpg',
-    category: 3
-  },
-  {
-    id: 8,
-    name: '美的电饭煲',
-    description: '智能预约，IH加热',
-    price: 499,
-    image: '/Images/midea-cooker.jpg',
-    category: 4
-  },
-  {
-    id: 9,
-    name: '耐克运动短裤',
-    description: '透气速干，运动必备',
-    price: 129,
-    image: '/Images/nike-shorts.jpg',
-    category: 5
-  },
-  {
-    id: 10,
-    name: '雅诗兰黛小棕瓶',
-    description: '修护精华，紧致焕亮',
-    price: 850,
-    image: '/Images/estee-lauder.jpg',
-    category: 6
-  }
-])
-
 const filteredProducts = computed(() => {
-  if (activeTab.value === 1) return products.value.slice(0, 6)
-  return products.value.filter(p => p.category === activeTab.value)
+  if (activeTab.value === 1) return props.products.slice(0, 6)
+  return props.products.filter(p => p.category === activeTab.value)
 })
 
 const btnStyle = {

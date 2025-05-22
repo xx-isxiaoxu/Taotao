@@ -18,5 +18,8 @@ jwt:
   SING: "ptu11380925" #密钥
   expireTime: 30 #token有效时间 (分钟)
 
+file:
+  save-path: "F:/dianshang(6)/dianshang/backend/src/main/resources/static/images/"
+
 image:
-  prefix-url: "http://127.0.0.1:8080/img"
+  prefix-url: "http://127.0.0.1:8080/"

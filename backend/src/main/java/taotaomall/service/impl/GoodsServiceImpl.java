@@ -53,4 +53,25 @@ public class GoodsServiceImpl implements GoodsService {
         }
         return new PageInfo<>(goodsList);
     }
+
+    @Override
+    public List<Goods> getNewGoodsRandom6() {
+        List<Goods> goodsList = goodsDao.getNewGoodsRandom6();
+        for(Goods goods : goodsList) {
+            String picpath = goods.getGpicture();
+            goods.setGpicture(imgUrl + picpath);
+        }
+        return goodsList;
+    }
+
+    @Override
+    public List<Goods> getHotGoodsRandom8() {
+        List<Goods> goodsList = goodsDao.getHotGoodsRandom8();
+        for(Goods goods : goodsList) {
+            String picpath = goods.getGpicture();
+            goods.setGpicture(imgUrl + picpath);
+        }
+        return goodsList;
+    }
+    
 }

@@ -16,4 +16,6 @@ public class Goods {
     private Integer gsales;
     private Date created_at;
     private Date updated_at;
+    private Integer is_new;
+    private Integer is_hot;
 }
