@@ -74,17 +74,17 @@ public class CartController {
         }
     }
 
-//    @PostMapping("/pay/{uid}")
-//    public Result payAll(@PathVariable Integer uid)
-//    {
-//        int res = cartService.payCart(uid);
-//        if(res >= 1)
-//        {
-//            return Result.success();
-//        }
-//        else
-//        {
-//            return Result.failure(ResultCodeEnum.FAIL,"结算失败！");
-//        }
-//    }
+    @PostMapping("/pay/{uid}")
+    public Result payAll(@PathVariable Integer uid)
+    {
+        int res = cartService.payCart(uid);
+        if(res >= 1)
+        {
+            return Result.success();
+        }
+        else
+        {
+            return Result.failure(ResultCodeEnum.FAIL,"结算失败！");
+        }
+    }
 }

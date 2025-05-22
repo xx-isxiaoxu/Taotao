@@ -10,5 +10,5 @@ public interface CartService {
     Cart modifyNumber(Integer uid,Integer gid,Integer type);
     int deleteOne(Integer id);
     int deleteAll(Integer uid);
-//    int payCart(Integer uid);
+    int payCart(Integer uid);
 }
