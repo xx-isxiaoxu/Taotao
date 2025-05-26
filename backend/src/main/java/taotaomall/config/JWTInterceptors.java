@@ -18,25 +18,14 @@ public class JWTInterceptors implements HandlerInterceptor {
     //ctrl + i
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // 设置CORS响应头（每次都设置）
-        response.setHeader("Access-Control-Allow-Origin", "http://127.0.0.1:5173");
-        response.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization,token");
-        response.setHeader("Access-Control-Allow-Credentials", "true");
-
-        // 放行OPTIONS预检请求
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            response.setStatus(HttpServletResponse.SC_OK);
-            return false;
-        }
-
-        // 放行登录和注册接口
         String uri = request.getRequestURI();
-        if (uri.contains("/user/login") || uri.contains("/user/register")) {
+
+        // 放行不需要校验token的接口和静态资源
+        if (uri.equals("/api/goods/new") || uri.equals("/api/goods/hot") || uri.startsWith("/img/")) {
             return true;
         }
 
-        // 支持 Authorization 和 token 两种头
+        String message ="";
         String token = request.getHeader("token");
         if (token == null || token.isEmpty()) {
             String authHeader = request.getHeader("Authorization");
