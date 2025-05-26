@@ -15,10 +15,10 @@
         <carousel-section></carousel-section>
         
         <!-- 热门商品推荐 -->
-        <hot-products></hot-products>
+        <hot-products :products="hotProducts" />
         
         <!-- 新品上架 -->
-        <new-products></new-products>
+        <new-products :products="newProducts" />
         
         <!-- 促销活动专区 -->
         <promotion-section></promotion-section>
@@ -45,13 +45,24 @@ import SideToolbar from '../../components/layout/SideToolbar.vue'
 import { useRouter } from 'vue-router'
 import { ref, onMounted } from 'vue'
 import { useProductStore } from '@/stores/product'
+import { getHotGoods, getNewGoods } from '@/api/good'
 
 const router = useRouter()
 const productStore = useProductStore()
 const products = ref([])
+const hotProducts = ref([])
+const newProducts = ref([])
 
 onMounted(async () => {
-  products.value = await productStore.getProductList()
+  products.value = await productStore.getProductList(1, 10)
+  const res = await getHotGoods()
+  if (res.data && res.data.data) {
+    hotProducts.value = res.data.data
+  }
+  const newRes = await getNewGoods()
+  if (newRes.data && newRes.data.data) {
+    newProducts.value = newRes.data.data
+  }
 })
 
 const goToDetail = (productId) => {

@@ -68,6 +68,8 @@ import CartPopover from '../cart/CartPopover.vue'
 import { useCartStore } from '@/stores/cart'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
+import { searchGoods } from '@/api/good'
+import { ElMessage } from 'element-plus'
 
 // 热门推荐商品数据（与HotProducts.vue保持一致）
 const hotProducts = [
@@ -146,6 +148,7 @@ const hotProducts = [
 ]
 
 const searchText = ref('')
+const searchResults = ref([])
 const cartStore = useCartStore()
 const userStore = useUserStore()
 const cartCount = computed(() => cartStore.cartCount)
@@ -192,20 +195,11 @@ function handleSuggestClick(product) {
   recordClick(product.id)
   router.push(`/product/${product.id}`)
 }
-function handleSearch() {
+async function handleSearch() {
   const keyword = searchText.value.trim()
   if (!keyword) return
-  let sorted = [...hotProducts].sort((a, b) => getClickCount(b.id) - getClickCount(a.id));
-  let product = sorted.find(p => p.name === keyword);
-  if (!product) product = sorted.find(p => p.name.includes(keyword));
-  if (!product) product = sorted.find(p => p.description.includes(keyword));
-  if (product) {
-    recordClick(product.id);
-    router.push(`/product/${product.id}`);
-  } else {
-    // 可用ElMessage提示未找到
-    alert('未找到相关商品')
-  }
+  // 跳转到搜索结果页，并把关键词作为 query 传递
+  router.push({ path: '/search', query: { keyword } })
 }
 </script>
 

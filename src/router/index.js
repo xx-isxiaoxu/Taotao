@@ -88,6 +88,11 @@ const router = createRouter({
         title: '数据统计',
         requiresAuth: true
       }
+    },
+    {
+      path: '/search',
+      name: 'SearchResult',
+      component: () => import('@/views/search/SearchResult.vue')
     }
   ]
 })

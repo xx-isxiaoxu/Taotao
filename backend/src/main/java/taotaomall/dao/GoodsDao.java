@@ -10,4 +10,6 @@ public interface GoodsDao {
     List<Goods> getAllgoods();
     Goods getGoodById(Integer gid);
     List<Goods> searchGoodsByName(String gname);
+    List<Goods> getNewGoodsRandom6();
+    List<Goods> getHotGoodsRandom8();
 }
