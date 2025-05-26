@@ -18,6 +18,13 @@ public class JWTInterceptors implements HandlerInterceptor {
     //ctrl + i
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        String uri = request.getRequestURI();
+
+        // 放行不需要校验token的接口和静态资源
+        if (uri.equals("/api/goods/new") || uri.equals("/api/goods/hot") || uri.startsWith("/img/")) {
+            return true;
+        }
+
         String message ="";
         String token = request.getHeader("token");
         try{
