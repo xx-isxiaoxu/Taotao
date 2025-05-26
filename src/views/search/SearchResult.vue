@@ -50,7 +50,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { searchGoods } from '@/api/good'
+import { searchGoods } from '@/api/goods'
 
 const route = useRoute()
 const router = useRouter()

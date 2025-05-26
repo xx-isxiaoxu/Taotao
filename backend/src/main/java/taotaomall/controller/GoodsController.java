@@ -4,10 +4,14 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import taotaomall.model.Goods;
+import taotaomall.model.GoodsDetail;
 import taotaomall.service.GoodsService;
+import taotaomall.service.GoodsDetailService;
 import taotaomall.utils.Result;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/goods")
@@ -15,6 +19,9 @@ public class GoodsController {
     
     @Autowired
     private GoodsService goodsService;
+
+    @Autowired
+    private GoodsDetailService goodsDetailService;
 
     /**
      * 分页获取所有商品
@@ -61,5 +68,15 @@ public class GoodsController {
     public Result getHotGoods() {
         List<Goods> goodsList = goodsService.getHotGoodsRandom8();
         return Result.success(goodsList);
+    }
+
+    @GetMapping("/fullDetail/{gid}")
+    public Result getFullProductDetail(@PathVariable("gid") Integer gid) {
+        Goods goods = goodsService.getGoodById(gid);
+        GoodsDetail detail = goodsDetailService.getByGoodsId(gid);
+        Map<String, Object> result = new HashMap<>();
+        result.put("goods", goods);
+        result.put("detail", detail);
+        return Result.success(result);
     }
 }

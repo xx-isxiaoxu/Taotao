@@ -68,7 +68,7 @@ import CartPopover from '../cart/CartPopover.vue'
 import { useCartStore } from '@/stores/cart'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
-import { searchGoods } from '@/api/good'
+import { searchGoods } from '@/api/goods'
 import { ElMessage } from 'element-plus'
 
 // 热门推荐商品数据（与HotProducts.vue保持一致）

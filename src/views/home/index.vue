@@ -45,7 +45,7 @@ import SideToolbar from '../../components/layout/SideToolbar.vue'
 import { useRouter } from 'vue-router'
 import { ref, onMounted } from 'vue'
 import { useProductStore } from '@/stores/product'
-import { getHotGoods, getNewGoods } from '@/api/good'
+import { getHotGoods, getNewGoods } from '@/api/goods'
 
 const router = useRouter()
 const productStore = useProductStore()

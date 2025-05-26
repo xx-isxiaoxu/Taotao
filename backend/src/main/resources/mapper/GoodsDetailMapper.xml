@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="taotaomall.dao.GoodsDetailDao">
+    <select id="selectByGoodsId" resultType="taotaomall.model.GoodsDetail">
+        SELECT * FROM goods_detail WHERE goods_id = #{goodsId}
+    </select>
+    <insert id="insertGoodsDetail" parameterType="taotaomall.model.GoodsDetail">
+        INSERT INTO goods_detail(goods_id, detail_html, specs, params, images, created_at, updated_at)
+        VALUES (#{goodsId}, #{detailHtml}, #{specs}, #{params}, #{images}, #{createdAt}, #{updatedAt})
+    </insert>
+    <update id="updateGoodsDetail" parameterType="taotaomall.model.GoodsDetail">
+        UPDATE goods_detail
+        SET detail_html=#{detailHtml}, specs=#{specs}, params=#{params}, images=#{images}, updated_at=#{updatedAt}
+        WHERE goods_id=#{goodsId}
+    </update>
+</mapper>

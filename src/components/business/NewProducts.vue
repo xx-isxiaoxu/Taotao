@@ -15,7 +15,8 @@
     <div class="products-grid">
       <div v-for="product in products" 
            :key="product.gid" 
-           class="product-card">
+           class="product-card"
+           @click="goToDetail(product.gid)">
         <div class="product-image">
           <img :src="product.gpicture" :alt="product.gname">
           <div class="new-tag">新品</div>
@@ -77,6 +78,10 @@ const btnStyle = {
     transform: 'scale(1.045) translateY(-6px) rotateZ(-0.5deg)',
     boxShadow: '0 8px 32px rgba(158,140,185,0.18)'
   }
+}
+
+function goToDetail(id) {
+  router.push(`/product/${id}`)
 }
 </script>
 

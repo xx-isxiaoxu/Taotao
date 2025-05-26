@@ -20,3 +20,14 @@ export function getNewGoods() {
 export function searchGoods(params) {
   return request.get(`/api/goods/search`, { params })
 }
+
+// 获取商品详情（根据商品ID）
+export function getGoodsDetailByGoodsId(goodsId) {
+  return request.get(`/api/goodsDetail/byGoodsId/${goodsId}`)
+}
+
+export function getFullProductDetail(goodsId) {
+  return request.get(`/api/goods/fullDetail/${goodsId}`)
+}
+
+export const getGoodsDetail = getGoodsDetailByGoodsId

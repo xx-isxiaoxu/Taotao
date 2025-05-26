@@ -7,9 +7,9 @@
     
     <div class="products-grid">
       <div v-for="product in products" 
-           :key="product.id" 
+           :key="product.gid" 
            class="product-card"
-           @click="handleProductClick(product)">
+           @click="goToDetail(product.gid)">
         <img :src="product.gpicture" :alt="product.gname">
         <h3>{{ product.gname }}</h3>
         <p class="description">{{ product.gdetails }}</p>
@@ -21,9 +21,7 @@
           <el-button type="primary" :style="btnStyle" @click.stop="handleBuyNow(product, $event)">
             立即购买
           </el-button>
-          <button class="add-cart-btn" @click="addToCart(product, $event)">
-            加入购物车
-          </button>
+          <el-button @click.stop="addToCart(product, $event)">加入购物车</el-button>
         </div>
       </div>
     </div>
@@ -60,20 +58,19 @@ function recordClick(productId) {
   localStorage.setItem(key, JSON.stringify(clicks));
 }
 
-function handleProductClick(product) {
-  recordClick(product.id);
-  router.push(`/product/${product.id}`);
+function goToDetail(id) {
+  router.push(`/product/${id}`)
 }
 
 function handleBuyNow(product, event) {
   event.stopPropagation();
-  recordClick(product.id);
-  router.push(`/product/${product.id}`);
+  recordClick(product.gid);
+  router.push(`/product/${product.gid}`);
 }
 
 function addToCart(product, event) {
   event.stopPropagation();
-  recordClick(product.id);
+  recordClick(product.gid);
   cartStore.addToCart(product, 1);
 }
 </script>

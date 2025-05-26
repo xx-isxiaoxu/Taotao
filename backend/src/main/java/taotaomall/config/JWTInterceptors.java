@@ -34,7 +34,7 @@ public class JWTInterceptors implements HandlerInterceptor {
             }
         }
 
-        String message = "";
+        message = "";
         try {
             JWTUtils.verify(token);
             return true; // 直接放行

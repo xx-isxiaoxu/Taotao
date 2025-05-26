@@ -34,13 +34,20 @@
     <div class="detail-container">
       <!-- 左侧商品图片 -->
       <div class="product-gallery">
-        <el-carousel class="gallery-carousel" trigger="click" indicator-position="outside">
-          <el-carousel-item v-for="(img, index) in productImages" :key="index">
-            <el-image 
-              :src="img"
-              :preview-src-list="productImages"
+        <el-carousel
+          class="gallery-carousel"
+          indicator-position="outside"
+          height="400px"
+          :autoplay="false"
+          arrow="always"
+        >
+          <el-carousel-item v-for="(img, idx) in productImages" :key="img">
+            <el-image
+              :src="getFullImageUrl(img)"
+              :preview-src-list="productImages.map(getFullImageUrl)"
+              :initial-index="idx"
               fit="contain"
-              class="main-image"
+              class="carousel-image"
             />
           </el-carousel-item>
         </el-carousel>
@@ -59,7 +66,7 @@
         </div>
 
         <!-- 规格选择 -->
-        <div class="specs-section">
+        <div class="specs-section" v-if="product.specs && product.specs.length">
           <h3>规格选择</h3>
           <div v-for="spec in product.specs" :key="spec.name" class="spec-group">
             <div class="spec-title">{{ spec.name }}</div>
@@ -108,7 +115,7 @@
     <div class="detail-content">
       <el-tabs>
         <el-tab-pane label="商品详情">
-          <div class="rich-text-content" v-html="product.detail"></div>
+          <div class="rich-text-content" v-html="product.detailHtml"></div>
         </el-tab-pane>
         <el-tab-pane label="用户评价" name="reviews">
           <!-- 评价入口 -->
@@ -174,6 +181,7 @@ import { useCollectStore } from '@/stores/collect'
 import { useReviewStore } from '@/stores/review'
 import { useUserStore } from '@/stores/user'
 import ReviewForm from './components/ReviewForm.vue'
+import { getFullProductDetail } from '@/api/goods'
 
 const route = useRoute()
 const router = useRouter()
@@ -190,33 +198,10 @@ const reviewStore = useReviewStore()
 const userStore = useUserStore()
 const showReviewForm = ref(false)
 
-// 商品图片列表
-const productImages = ref([
-  '/product/xiaoxin4.avif',
-  '/product/xiaoxin5.avif',
-  '/product/xiaoxin1.jpg',
-  '/product/xiaoxin2.jpg',
-  '/product/xiaoxin3.jpg'
-])
+const productImages = ref([])
 
 // 商品数据
-const product = ref({
-  id: 1,
-  name: '小新Pro16',
-  description: '16英寸大屏轻薄本',
-  price: 5999,
-  originalPrice: 6999,
-  image: '/Images/xiaoxin-pro16.jpg',
-  category: '电脑办公',
-  detail: `
-    <h3>产品参数</h3>
-    <p>处理器：第13代英特尔® Core™ i5-13500H</p>
-    <p>显卡：NVIDIA® GeForce® RTX™ 4050</p>
-    <p>内存：16GB</p>
-    <p>存储：512GB SSD</p>
-    <p>屏幕：16英寸 2.5K 165Hz</p>
-  `
-})
+const product = ref({})
 
 // 获取商品评价
 const productReviews = computed(() => {
@@ -300,7 +285,18 @@ const loadProductDetail = async (id) => {
   try {
     await productStore.getProductDetail(id)
     if (productStore.productDetail) {
-      product.value = productStore.productDetail
+      product.value = {
+        id: productStore.productDetail.gid,
+        name: productStore.productDetail.gname,
+        price: productStore.productDetail.gprice,
+        description: productStore.productDetail.gdesc,
+        image: productStore.productDetail.gpicture,
+        ...productStore.productDetail,
+        specs: productStore.productDetail.specs ? JSON.parse(productStore.productDetail.specs) : [],
+        params: productStore.productDetail.params ? JSON.parse(productStore.productDetail.params) : [],
+        images: productStore.productDetail.images ? JSON.parse(productStore.productDetail.images) : [],
+        detailHtml: productStore.productDetail.detailHtml
+      }
       if (productStore.productDetail.images) {
         productImages.value = productStore.productDetail.images
       }
@@ -320,10 +316,36 @@ const loadProductDetail = async (id) => {
   }
 }
 
-onMounted(() => {
-  const productId = route.params.id
-  // 根据ID获取商品详情
-  loadProductDetail(productId)
+onMounted(async () => {
+  const goodsId = route.params.id
+  try {
+    const res = await getFullProductDetail(goodsId)
+    if (res.data && res.data.data) {
+      const goods = res.data.data.goods || {}
+      const detail = res.data.data.detail || {}
+      product.value = {
+        id: goods.gid || detail.goodsId || detail.id,
+        name: goods.gname,
+        price: goods.gprice,
+        image: goods.gpicture,
+        description: goods.gdetails,
+        detailHtml: detail.detailHtml || '',
+        specs: detail.specs ? JSON.parse(detail.specs) : [],
+        params: detail.params ? JSON.parse(detail.params) : [],
+        images: detail.images
+          ? (typeof detail.images === 'string'
+              ? JSON.parse(detail.images)
+              : detail.images)
+          : []
+      }
+      productImages.value = product.value.images
+    } else {
+      ElMessage.error('商品详情不存在')
+    }
+  } catch (e) {
+    ElMessage.error('获取商品详情失败')
+    console.error(e)
+  }
 })
 
 const viewOrder = () => {
@@ -339,6 +361,14 @@ const handleReviewSubmit = () => {
 const formatDate = (dateStr) => {
   if (!dateStr) return ''
   return new Date(dateStr).toLocaleString()
+}
+
+const BASE_URL = 'http://127.0.0.1:8080'
+
+function getFullImageUrl(img) {
+  if (!img) return ''
+  if (img.startsWith('http')) return img
+  return img.startsWith('/') ? BASE_URL + img : BASE_URL + '/' + img
 }
 </script>
 
@@ -360,8 +390,7 @@ const formatDate = (dateStr) => {
   min-height: 100vh;
   background: #f5f6f7;
   position: relative;
-  padding-top: 60px;  /* 这里设置了滚动，但是没有效果 */
-  overflow-y: auto;
+  padding-top: 60px;
 }
 
 .detail-nav {
@@ -437,44 +466,32 @@ const formatDate = (dateStr) => {
 }
 
 .product-gallery {
-  flex: 0 0 600px;
-  height: 600px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  background: #fff;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  /* 可根据页面布局调整 */
 }
 
 .gallery-carousel {
-  width: 90%;
-  height: 90%;
-  border-radius: 0;
-  overflow: hidden;
+  width: 100%;
+  height: 400px;
+  /* 可根据需要自适应高度 */
 }
 
-:deep(.el-carousel__container) {
-  height: 100%;  /* 确保轮播容器占满高度 */
-}
-
-:deep(.el-carousel__item) {
-  height: 100%;  /* 确保轮播项占满高度 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-}
-
-.main-image {
+.carousel-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;  /* 改为cover以填充整个区域 */
+  object-fit: contain;
+  cursor: pointer;
   background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
 }
 
-/* 调整轮播图指示器位置 */
-:deep(.el-carousel__indicators) {
-  bottom: 0;
+@media (max-width: 768px) {
+  .gallery-carousel {
+    height: 220px;
+  }
 }
 
 .product-info {
