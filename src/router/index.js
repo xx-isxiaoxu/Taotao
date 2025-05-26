@@ -109,7 +109,7 @@ router.beforeEach(async (to, from, next) => {
       userStore.setToken(token)
     }
   }
-
+  
   if (to.meta.requiresAuth && !userStore.token) {
     next('/login')
   } else {

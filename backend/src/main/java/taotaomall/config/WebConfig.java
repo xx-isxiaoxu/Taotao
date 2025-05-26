@@ -24,7 +24,8 @@ public class WebConfig implements WebMvcConfigurer {
                     "/images/**",   // 放行小写
                     "/product/**",
                     "/api/goods/**",
-                    "/api/goodsDetail/**"
+                    "/api/goodsDetail/**",
+                    "/api/cart/**"
                 );
     }
 

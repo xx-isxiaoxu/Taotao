@@ -1,17 +1,17 @@
 <template>
   <div class="cart-popover">
-    <div v-if="cartStore.cartItems.length === 0" class="empty-cart">
+    <div v-if="cartItems.length === 0" class="empty-cart">
       <el-empty description="购物车是空的" />
     </div>
     <div v-else class="cart-items">
-      <div v-for="item in cartStore.cartItems" :key="`${item.id}-${JSON.stringify(item.specs)}`" class="cart-item">
-        <img :src="item.image" :alt="item.name" class="item-image">
+      <div v-for="item in cartItems" :key="`${item.id}-${JSON.stringify(item.specs)}`" class="cart-item">
+        <img :src="item.goodsImage" :alt="item.goodsName" class="item-image">
         <div class="item-info">
-          <div class="item-name">{{ item.name }}</div>
+          <div class="item-name">{{ item.goodsName }}</div>
           <div class="item-specs" v-if="Object.keys(item.specs).length">
             {{ formatSpecs(item.specs) }}
           </div>
-          <div class="item-price">¥{{ item.price }}</div>
+          <div class="item-price">¥{{ item.goodsPrice }}</div>
           <div class="item-quantity">
             <el-input-number 
               v-model="item.quantity" 
@@ -33,7 +33,7 @@
       </div>
       <div class="cart-footer">
         <div class="total">
-          总计: <span class="price">¥{{ cartStore.totalPrice }}</span>
+          总计: <span class="price">¥{{ totalPrice }}</span>
         </div>
         <el-button type="primary" @click="goToCart">去结算</el-button>
       </div>
@@ -42,25 +42,56 @@
 </template>
 
 <script setup>
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Delete } from '@element-plus/icons-vue'
-import { useCartStore } from '@/stores/cart'
+import { getCartList, updateCart, deleteCartItem, clearCart } from '@/api/cart'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
-const cartStore = useCartStore()
+const userStore = useUserStore()
+const userId = computed(() => userStore.userInfo?.id) // 假设你的 userStore 里有 userInfo.id
+
+const cartItems = ref([])
+const totalPrice = computed(() =>
+  cartItems.value.reduce((sum, item) => sum + item.goodsPrice * item.quantity, 0)
+)
+
+const fetchCart = async () => {
+  if (!userId.value) return
+  const res = await getCartList(userId.value)
+  cartItems.value = res.data?.data?.list || []
+}
+
+onMounted(fetchCart)
+
+// 更新数量
+const updateQuantity = async (item, quantity) => {
+  const newItem = { ...item, quantity }
+  await updateCart(newItem)
+  fetchCart()
+}
+
+// 删除单个
+const removeItem = async (item) => {
+  await deleteCartItem(item.id)
+  fetchCart()
+}
+
+// 清空
+const handleClearCart = async () => {
+  await clearCart(userId.value)
+  fetchCart()
+}
 
 const formatSpecs = (specs) => {
-  return Object.entries(specs)
-    .map(([name, value]) => `${name}: ${value}`)
-    .join(', ')
-}
-
-const updateQuantity = (item, quantity) => {
-  cartStore.updateQuantity(item.id, item.specs, quantity)
-}
-
-const removeItem = (item) => {
-  cartStore.removeFromCart(item.id, item.specs)
+  if (!specs) return ''
+  try {
+    const obj = typeof specs === 'string' ? JSON.parse(specs) : specs
+    return Object.entries(obj).map(([k, v]) => `${k}: ${v}`).join(', ')
+  } catch {
+    return specs
+  }
 }
 
 const goToCart = () => {

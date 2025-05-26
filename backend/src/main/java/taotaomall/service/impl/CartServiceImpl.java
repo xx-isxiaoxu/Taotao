@@ -1,15 +1,14 @@
 package taotaomall.service.impl;
 
 import taotaomall.dao.OrderDao;
-import taotaomall.model.Cart; // 导入 Cart 实体类，请根据实际包路径修改
-import com.github.pagehelper.PageInfo; // 导入 PageInfo 类
-import com.github.pagehelper.PageHelper; // 导入 PageHelper 类
-import java.util.List; // 导入 List 类
+import taotaomall.model.Cart;
+import com.github.pagehelper.PageInfo;
+import com.github.pagehelper.PageHelper;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import taotaomall.dao.CartDao;
 import taotaomall.dao.GoodsDao;
-import taotaomall.model.Goods;
 import taotaomall.model.Userorder;
 import taotaomall.service.CartService;
 
@@ -21,51 +20,36 @@ public class CartServiceImpl implements CartService {
     GoodsDao goodsDao;
     @Autowired(required = false)
     OrderDao orderDao;
+
     @Override
-    public Cart insertCart(Cart cart) {
-        Cart cartJdbc = cartDao.getCartByUGid(cart.getUid(),cart.getGoodid());
-        Goods goods = goodsDao.getGoodById(cart.getGoodid());
-        if(cartJdbc!=null)
-        {
-            int number = cart.getNumber() + cartJdbc.getNumber();
-            int price = number * goods.getGprice();
-            cartDao.updateCart(number,price,cartJdbc.getId());
-            cart.setNumber(number);
-            cart.setPrice(price);
-            cart.setId(cartJdbc.getId());
+    public int insertCart(Cart cart) {
+        // 检查是否已存在相同商品+规格的购物车项
+        Cart exist = cartDao.getCartByUserAndGoods(cart.getUserId(), cart.getGoodsId(), cart.getSpecs());
+        if (exist != null) {
+            // 已存在则更新数量
+            exist.setQuantity(exist.getQuantity() + cart.getQuantity());
+            exist.setGoodsPrice(cart.getGoodsPrice()); // 可根据实际业务调整
+            return cartDao.updateCart(exist.getQuantity(), exist.getGoodsPrice(), exist.getId(), exist.getSpecs());
+        } else {
+            return cartDao.insertCart(cart);
         }
-        else
-        {
-            int price = cart.getNumber() * goods.getGprice();
-            cart.setPrice(price);
-            cartDao.insertCart(cart);
-        }
-        return cart;
     }
 
     @Override
-    public PageInfo<Cart> getAllCart(Integer uid, Integer pageNum, Integer pageSize) {
-        //开启分页
-        PageHelper.startPage(pageNum,pageSize);
-        List<Cart> cartList = cartDao.getAllCart(uid);
-        PageInfo<Cart> pageInfo = new PageInfo<>(cartList);
-        return pageInfo;
+    public Cart getCartByUserAndGoods(Long userId, Integer goodsId, String specs) {
+        return cartDao.getCartByUserAndGoods(userId, goodsId, specs);
     }
 
     @Override
-    public Cart modifyNumber(Integer uid, Integer gid, Integer type) {
-        Cart cartJdbc = cartDao.getCartByUGid(uid,gid);
-        Goods goods = goodsDao.getGoodById(gid);
-        if(cartJdbc!=null)
-        {
-            int number = cartJdbc.getNumber() + 1 * (type);
-            cartJdbc.setNumber(number);
-            int price = number * goods.getGprice();
-            cartJdbc.setPrice(price);
-            cartDao.updateCart(number,price,cartJdbc.getId());
-            return cartJdbc;
-        }
-        return null;
+    public int updateCart(Cart cart) {
+        return cartDao.updateCart(cart.getQuantity(), cart.getGoodsPrice(), cart.getId(), cart.getSpecs());
+    }
+
+    @Override
+    public PageInfo<Cart> getAllCart(Long userId, Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        List<Cart> cartList = cartDao.getAllCart(userId);
+        return new PageInfo<>(cartList);
     }
 
     @Override
@@ -74,24 +58,27 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public int deleteAll(Integer uid) {
-        return cartDao.deleteAll(uid);
+    public int deleteAll(Long userId) {
+        return cartDao.deleteAll(userId);
     }
 
     @Override
-    public int payCart(Integer uid) {
-        List<Cart> cartList = cartDao.getAllCart(uid);
-        if(cartList.size()==0)
-        {
+    public int payCart(Long userId) {
+        List<Cart> cartList = cartDao.getAllCart(userId);
+        if(cartList.size() == 0) {
             return 0;
         }
-        //插入订单列表
-        for(Cart cart : cartList)
-        {
-            Userorder userorder = new Userorder(cart.getNumber(),cart.getPrice(),cart.getGoodsname(),cart.getUid());
+        // 插入订单列表
+        for(Cart cart : cartList) {
+            Userorder userorder = new Userorder(
+                cart.getQuantity(),
+                cart.getGoodsPrice(),
+                cart.getGoodsName(),
+                cart.getUserId()
+            );
             orderDao.InsertOrder(userorder);
     }
-       //删除购物车
-        return cartDao.deleteAll(uid);
+        // 删除购物车
+        return cartDao.deleteAll(userId);
     }
 }

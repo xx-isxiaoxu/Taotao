@@ -5,6 +5,7 @@ export const useUserStore = defineStore('user', {
   state: () => ({
     token: localStorage.getItem('token') || '',
     userInfo: JSON.parse(localStorage.getItem('userInfo')) || {
+      id: null,
       username: '',
       nickname: '',
       phone: '',
@@ -23,6 +24,7 @@ export const useUserStore = defineStore('user', {
       id: null
     }
   }),
+  persist: true,
   
   actions: {
     // 设置token
@@ -100,15 +102,7 @@ export const useUserStore = defineStore('user', {
     // 退出登录
     logout() {
       this.token = ''
-      this.userInfo = {
-        username: '',
-        nickname: '',
-        phone: '',
-        email: '',
-        createTime: '',
-        avatar: '',
-        addressList: []
-      }
+      this.userInfo = null
       localStorage.removeItem('token')
       localStorage.removeItem('userInfo')
     },
@@ -131,11 +125,14 @@ export const useUserStore = defineStore('user', {
     async loginUser(userData) {
       try {
         const res = await login(userData)
-        // 这里保存 token
         if (res.data && res.data.data && res.data.data.token) {
           this.setToken(res.data.data.token)
-          // 如果有 setUserInfo 也可以保存用户信息
-          // this.setUserInfo(res.data.data)
+          // 兼容后端返回
+          const userInfo = {
+            id: res.data.data.id || res.data.data.userId, // 这里要有 id 字段
+            username: res.data.data.username || res.data.data.userName || userData.username
+          }
+          this.setUserInfo(userInfo)
         }
         return res.data
       } catch (err) {

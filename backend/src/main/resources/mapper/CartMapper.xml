@@ -3,22 +3,34 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="taotaomall.dao.CartDao">
+    <!-- 插入购物车项 -->
     <insert id="insertCart" parameterType="taotaomall.model.Cart" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO cart (goodsname,number, price,goodid,uid)VALUES(#{goodsname}, #{number}, #{price},#{goodid},#{uid});
+        INSERT INTO cart (user_id, goods_id, goods_detail_id, goods_name, goods_image, goods_price, specs, quantity, create_time, update_time)
+        VALUES (#{userId}, #{goodsId}, #{goodsDetailId}, #{goodsName}, #{goodsImage}, #{goodsPrice}, #{specs}, #{quantity}, #{createTime}, #{updateTime})
     </insert>
-    <select id="getCartByUGid" resultType="taotaomall.model.Cart">
-        SELECT * FROM cart WHERE goodid=#{gid} and uid=#{uid}
+
+    <!-- 根据用户ID、商品ID、规格查询购物车项 -->
+    <select id="getCartByUserAndGoods" resultType="taotaomall.model.Cart">
+        SELECT * FROM cart WHERE user_id = #{userId} AND goods_id = #{goodsId} AND specs = #{specs}
     </select>
-    <update id="updateCart" parameterType="int">
-        UPDATE cart SET number = #{number},price = #{price} where id = #{id}
+
+    <!-- 更新购物车项（数量、价格、规格） -->
+    <update id="updateCart">
+        UPDATE cart SET quantity = #{quantity}, goods_price = #{goodsPrice}, specs = #{specs}, update_time = NOW() WHERE id = #{id}
     </update>
-    <select id="getAllCart" parameterType="int" resultType="taotaomall.model.Cart">
-        SELECT * FROM cart WHERE uid = #{uid}
+
+    <!-- 查询用户所有购物车项 -->
+    <select id="getAllCart" resultType="taotaomall.model.Cart">
+        SELECT * FROM cart WHERE user_id = #{userId}
     </select>
-    <delete id="deleteOne" parameterType="int">
+
+    <!-- 删除单个购物车项 -->
+    <delete id="deleteOne">
         DELETE FROM cart WHERE id = #{id}
     </delete>
-    <delete id="deleteAll" parameterType="int">
-        DELETE FROM cart WHERE uid = #{uid}
+
+    <!-- 清空用户购物车 -->
+    <delete id="deleteAll">
+        DELETE FROM cart WHERE user_id = #{userId}
     </delete>
 </mapper>

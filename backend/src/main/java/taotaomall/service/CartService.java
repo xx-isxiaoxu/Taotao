@@ -1,14 +1,15 @@
 package taotaomall.service;
 
 import com.github.pagehelper.PageInfo;
-import taotaomall.model.Cart; // 导入 Cart 实体类
+import taotaomall.model.Cart;
+import java.util.List;
 
 public interface CartService {
-    Cart insertCart(Cart cart);
-
-    PageInfo<Cart> getAllCart(Integer uid, Integer pageNum, Integer pageSize);
-    Cart modifyNumber(Integer uid,Integer gid,Integer type);
+    int insertCart(Cart cart);
+    Cart getCartByUserAndGoods(Long userId, Integer goodsId, String specs);
+    int updateCart(Cart cart);
+    PageInfo<Cart> getAllCart(Long userId, Integer pageNum, Integer pageSize);
     int deleteOne(Integer id);
-    int deleteAll(Integer uid);
-    int payCart(Integer uid);
+    int deleteAll(Long userId);
+    int payCart(Long userId);
 }

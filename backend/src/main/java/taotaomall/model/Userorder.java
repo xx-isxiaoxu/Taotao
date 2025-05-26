@@ -6,17 +6,18 @@ import lombok.Data;
 public class Userorder {
     private Integer id;
     private Integer number;
-    private Integer price;
+    private Double price;
     private String goodsname;
     private String time;
-    private Integer uid;
+    private Long uid;
 
-    public Userorder(int number, int price, String goodsname, Integer uid) {
+    public Userorder(int number, Double price, String goodsname, Long uid) {
         this.number = number;
         this.price = price;
         this.goodsname = goodsname;
         this.uid = uid;
-}
-public Userorder(){
+    }
+
+    public Userorder() {
     }
 }

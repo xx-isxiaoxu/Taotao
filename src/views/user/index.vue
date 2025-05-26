@@ -27,7 +27,7 @@
           <user-profile />
         </el-tab-pane>
         <el-tab-pane label="收货地址" name="address">
-          <user-address />
+          <UserAddress :address-list="userInfo?.addressList ?? []" />
         </el-tab-pane>
         <el-tab-pane label="我的订单" name="orders">
           <user-orders />
@@ -58,6 +58,9 @@ const router = useRouter()
 const route = useRoute()
 const activeTab = ref('profile')
 
+const userInfo = userStore.userInfo || {}
+const addressList = userInfo.addressList || []
+
 const goHome = () => {
   router.push('/home')
 }
@@ -74,6 +77,7 @@ onMounted(() => {
   if (route.query.tab === 'orders') {
     activeTab.value = 'orders'
   }
+  console.log('userInfo', userStore.userInfo)
 })
 </script>
 

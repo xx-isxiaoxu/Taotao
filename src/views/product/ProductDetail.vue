@@ -42,7 +42,7 @@
           arrow="always"
         >
           <el-carousel-item v-for="(img, idx) in productImages" :key="img">
-            <el-image
+            <el-image 
               :src="getFullImageUrl(img)"
               :preview-src-list="productImages.map(getFullImageUrl)"
               :initial-index="idx"
@@ -227,16 +227,13 @@ const initSelectedSpecs = () => {
 }
 
 // 加入购物车
-const addToCart = () => {
-  // 检查是否选择了所有必要的规格
-  const missingSpecs = product.value.specs?.filter(spec => !selectedSpecs.value[spec.name])
-  if (missingSpecs?.length > 0) {
-    ElMessage.warning('请选择商品规格')
-    return
-  }
-
-  cartStore.addToCart(product.value, quantity.value, selectedSpecs.value)
+const addToCart = async () => {
+  try {
+    await cartStore.addToCart(product.value, quantity.value, selectedSpecs.value)
   ElMessage.success('成功加入购物车！')
+  } catch (e) {
+    ElMessage.error(e.message || '加入购物车失败')
+  }
 }
 
 // 立即购买
