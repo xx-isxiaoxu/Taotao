@@ -15,7 +15,7 @@ public class OrderController {
     OrderService orderService;
 
     @GetMapping("/all")
-    public Result getAllOrder(@RequestParam(name = "uid") Integer uid,
+    public Result<PageInfo<Userorder>> getAllOrder(@RequestParam(name = "uid") Integer uid,
                               @RequestParam(name = "pageNum") Integer pageNum,
                               @RequestParam(name = "pageSize") Integer pageSize)
     {
@@ -24,7 +24,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/deleteone/{id}")
-    public Result deldeteOne(@PathVariable Integer id)
+    public Result<Void> deldeteOne(@PathVariable Integer id)
     {
         int res = orderService.deleteOneOrder(id);
         if(res >= 1)
@@ -38,7 +38,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/deleteall/{uid}")
-    public Result deldeteAll(@PathVariable Integer uid)
+    public Result<Void> deldeteAll(@PathVariable Integer uid)
     {
         int res = orderService.deleteAllOrder(uid);
         if(res >= 1)

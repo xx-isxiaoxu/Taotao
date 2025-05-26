@@ -10,7 +10,7 @@ import taotaomall.utils.Result;
 @RestController
 @RequestMapping("/api/goods")
 public class GoodsController {
-    
+
     @Autowired
     private GoodsService goodsService;
 
@@ -18,9 +18,9 @@ public class GoodsController {
      * 分页获取所有商品
      */
     @GetMapping("/all")
-    public Result getAllGoods(@RequestParam(name = "pageNum") Integer pageNum,
+    public Result<PageInfo<Goods>> getAllGoods(@RequestParam(name = "pageNum") Integer pageNum,
                               @RequestParam(name = "pageSize") Integer pageSize) {
-        PageInfo<Goods> pageInfo = goodsService.getAllgoods(pageNum, pageSize);
+        PageInfo<Goods> pageInfo = goodsService.getAllgoods(pageNum, pageSize); // 修改这里
         return Result.success(pageInfo);
     }
 
@@ -28,7 +28,7 @@ public class GoodsController {
      * 获取商品详情
      */
     @GetMapping("/detail/{gid}")
-    public Result getGoodsDetail(@PathVariable(name = "gid") Integer gid) {
+    public Result<Goods> getGoodsDetail(@PathVariable(name = "gid") Integer gid) {
         Goods goods = goodsService.getGoodById(gid);
         return Result.success(goods);
     }
@@ -37,10 +37,10 @@ public class GoodsController {
      * 搜索商品
      */
     @GetMapping("/search")
-    public Result searchGoods(@RequestParam(name = "gname") String gname,
+    public Result<PageInfo<Goods>> searchGoods(@RequestParam(name = "gname") String gname,
                             @RequestParam(name = "pageNum") Integer pageNum,
                             @RequestParam(name = "pageSize") Integer pageSize) {
-        PageInfo<Goods> pageInfo = goodsService.searchGoodsByName(gname, pageNum, pageSize);
+        PageInfo<Goods> pageInfo = goodsService.searchGoodsByName(gname, pageNum, pageSize); // 修改这里
         return Result.success(pageInfo);
     }
 }

@@ -33,7 +33,7 @@ public class UserController {
         }
     }
     @PostMapping("/login")
-    public Result login(@RequestBody User user){
+    public Result<Map<String, String>> login(@RequestBody User user){
         User userformjdbc = userService.loginService(user.getUsername(),user.getPassword());
         if(userformjdbc == null)
         {

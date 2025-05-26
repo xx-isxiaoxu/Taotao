@@ -14,7 +14,7 @@ public class CartController {
     @Autowired
     CartService cartService;
     @GetMapping("/all")
-    public Result getAllCart(@RequestParam(name = "uid") Integer uid,
+    public Result<PageInfo<Cart>> getAllCart(@RequestParam(name = "uid") Integer uid,
                              @RequestParam(name = "pageNum") Integer pageNum,
                              @RequestParam(name = "pageSize") Integer pageSize)
     {
@@ -23,7 +23,7 @@ public class CartController {
     }
 
     @PostMapping("/insert")
-    public Result insertCart(@RequestBody Cart cart)
+    public Result<Cart> insertCart(@RequestBody Cart cart)
     {
         Cart cart1 = cartService.insertCart(cart);
         return Result.success(cart1);
@@ -31,7 +31,7 @@ public class CartController {
 
 
     @PutMapping("/addone")
-    public Result addCart(@RequestParam(name = "uid") Integer uid,
+    public Result<Cart> addCart(@RequestParam(name = "uid") Integer uid,
                           @RequestParam(name = "gid") Integer gid)
     {
         Cart cart = cartService.modifyNumber(uid,gid,1);
@@ -39,7 +39,7 @@ public class CartController {
     }
 
     @PutMapping("/subone")
-    public Result subCart(@RequestParam(name = "uid") Integer uid,
+    public Result<Cart> subCart(@RequestParam(name = "uid") Integer uid,
                           @RequestParam(name = "gid") Integer gid)
     {
         Cart cart = cartService.modifyNumber(uid,gid,-1);
@@ -47,7 +47,7 @@ public class CartController {
     }
 
     @DeleteMapping("/deleteone/{id}")
-    public Result deldeteOne(@PathVariable Integer id)
+    public Result<Void> deldeteOne(@PathVariable Integer id)
     {
         int res = cartService.deleteOne(id);
         if(res >= 1)
@@ -61,7 +61,7 @@ public class CartController {
     }
 
     @DeleteMapping("/deleteall/{uid}")
-    public Result deldeteAll(@PathVariable Integer uid)
+    public Result<Void> deldeteAll(@PathVariable Integer uid)
     {
         int res = cartService.deleteAll(uid);
         if(res >= 1)
@@ -70,7 +70,7 @@ public class CartController {
         }
         else
         {
-            return Result.failure(ResultCodeEnum.FAIL,"删除失败！");
+            return Result.failure(ResultCodeEnum.FAIL,"清空失败！");
         }
     }
 
