@@ -30,6 +30,12 @@ export const useCartStore = defineStore('cart', {
     cartItems: [],
     totalPrice: 0
   }),
+  getters: {
+    cartCount(state) {
+      // 统计所有商品的数量总和
+      return state.cartItems.reduce((sum, item) => sum + Number(item.quantity), 0)
+    }
+  },
   actions: {
     getUserIdOrWarn() {
       const userStore = useUserStore()

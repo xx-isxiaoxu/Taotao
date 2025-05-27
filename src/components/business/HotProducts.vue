@@ -71,7 +71,7 @@ function handleBuyNow(product, event) {
 function addToCart(product, event) {
   event.stopPropagation();
   recordClick(product.gid);
-  cartStore.addToCart(product, 1);
+  router.push(`/product/${product.gid}`);
 }
 </script>
 

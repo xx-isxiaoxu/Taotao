@@ -67,19 +67,18 @@
             </div>
             <div class="col-info">
               <div class="item-main">
-                <img :src="item.image" :alt="item.name" class="item-image">
+                <img :src="item.goodsImage" :alt="item.goodsName" class="item-image">
                 <div class="item-details">
-                  <div class="item-name">{{ item.name }}</div>
-                  <div class="item-specs" v-if="Object.keys(item.specs).length">
+                  <div class="item-name">{{ item.goodsName }}</div>
+                  <div class="item-specs" v-if="item.specs">
                     {{ formatSpecs(item.specs) }}
                   </div>
-                  <div class="item-time">加入时间：{{ formatDate(item.addTime) }}</div>
                 </div>
               </div>
             </div>
             <div class="col-price">
               <span class="price-symbol">¥</span>
-              <span class="price-value">{{ item.price }}</span>
+              <span class="price-value">{{ Number(item.goodsPrice).toFixed(2) }}</span>
             </div>
             <div class="col-quantity">
               <el-input-number 
@@ -91,7 +90,7 @@
             </div>
             <div class="col-total">
               <span class="price-symbol">¥</span>
-              <span class="price-value">{{ (item.price * item.quantity).toFixed(2) }}</span>
+              <span class="price-value">{{ (Number(item.goodsPrice) * Number(item.quantity)).toFixed(2) }}</span>
             </div>
             <div class="col-action">
               <el-button type="danger" @click="removeItem(item)">
@@ -112,7 +111,7 @@
               已选择 <span class="highlight">{{ selectedCount }}</span> 件商品
             </div>
             <div class="total-info">
-              总计: <span class="price">¥{{ cartStore.selectedTotalPrice }}</span>
+              总计: <span class="price">¥{{ selectedTotalPrice }}</span>
             </div>
             <el-button type="primary" size="large" @click="handleCheckout" :disabled="selectedCount === 0">
               结算
@@ -177,15 +176,23 @@ const selectAll = ref(false)
 
 // 格式化规格信息
 const formatSpecs = (specs) => {
-  return Object.entries(specs)
-    .map(([name, value]) => `${name}: ${value}`)
-    .join(', ')
+  if (!specs) return ''
+  let obj = specs
+  if (typeof specs === 'string') {
+    try {
+      obj = JSON.parse(specs)
+    } catch {
+      return specs
+    }
+  }
+  return Object.entries(obj).map(([k, v]) => `${k}: ${v}`).join(', ')
 }
 
 // 格式化日期
 const formatDate = (dateString) => {
+  if (!dateString) return '-'
   const date = new Date(dateString)
-  return date.toLocaleString('zh-CN', {
+  return isNaN(date) ? '-' : date.toLocaleString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -203,9 +210,11 @@ const lastUpdateTime = computed(() => {
   return formatDate(latestItem.addTime)
 })
 
-const selectedCount = computed(() => {
-  return cartStore.cartItems.filter(item => item.selected).length
-})
+const selectedItems = computed(() => cartStore.cartItems.filter(item => item.selected))
+const selectedTotalPrice = computed(() =>
+  selectedItems.value.reduce((sum, item) => sum + Number(item.goodsPrice) * Number(item.quantity), 0).toFixed(2)
+)
+const selectedCount = computed(() => selectedItems.value.length)
 
 const handleSelectAll = (val) => {
   cartStore.toggleSelectAll(val)
@@ -218,6 +227,7 @@ const handleItemSelect = () => {
 // 页面加载时同步一次
 onMounted(() => {
   handleItemSelect()
+  cartStore.fetchCart()
 })
 
 const updateQuantity = (item, quantity) => {
@@ -439,11 +449,6 @@ const handleCheckout = () => {
   font-size: 12px;
   color: #666;
   margin-bottom: 4px;
-}
-
-.item-time {
-  font-size: 12px;
-  color: #999;
 }
 
 .price-symbol {

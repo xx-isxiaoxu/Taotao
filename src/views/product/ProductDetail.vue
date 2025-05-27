@@ -228,9 +228,15 @@ const initSelectedSpecs = () => {
 
 // 加入购物车
 const addToCart = async () => {
+  // 检查规格
+  const missingSpecs = product.value.specs?.filter(spec => !selectedSpecs.value[spec.name])
+  if (missingSpecs?.length > 0) {
+    ElMessage.warning('请选择商品规格')
+    return
+  }
   try {
     await cartStore.addToCart(product.value, quantity.value, selectedSpecs.value)
-  ElMessage.success('成功加入购物车！')
+    ElMessage.success('成功加入购物车！')
   } catch (e) {
     ElMessage.error(e.message || '加入购物车失败')
   }

@@ -37,7 +37,7 @@
         >
           <template #reference>
             <div class="nav-item">
-              <el-badge :value="cartCount" class="cart-badge">
+              <el-badge :value="cartStore.cartCount" :show-zero="true" class="cart-badge">
                 <el-icon><ShoppingCart /></el-icon>
               </el-badge>
               购物车
@@ -62,7 +62,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { Search, ShoppingCart, User } from '@element-plus/icons-vue'
 import CartPopover from '../cart/CartPopover.vue'
 import { useCartStore } from '@/stores/cart'
@@ -151,7 +151,6 @@ const searchText = ref('')
 const searchResults = ref([])
 const cartStore = useCartStore()
 const userStore = useUserStore()
-const cartCount = computed(() => cartStore.cartCount)
 const username = computed(() => userStore.userInfo?.nickname || userStore.userInfo?.username || '')
 const router = useRouter()
 
@@ -201,6 +200,10 @@ async function handleSearch() {
   // 跳转到搜索结果页，并把关键词作为 query 传递
   router.push({ path: '/search', query: { keyword } })
 }
+
+onMounted(() => {
+  cartStore.fetchCart()
+})
 </script>
 
 <style scoped>

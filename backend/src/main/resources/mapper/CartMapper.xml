@@ -4,9 +4,9 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="taotaomall.dao.CartDao">
     <!-- 插入购物车项 -->
-    <insert id="insertCart" parameterType="taotaomall.model.Cart" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO cart (user_id, goods_id, goods_detail_id, goods_name, goods_image, goods_price, specs, quantity, create_time, update_time)
-        VALUES (#{userId}, #{goodsId}, #{goodsDetailId}, #{goodsName}, #{goodsImage}, #{goodsPrice}, #{specs}, #{quantity}, #{createTime}, #{updateTime})
+    <insert id="insertCart" parameterType="taotaomall.model.Cart">
+        INSERT INTO cart (user_id, goods_id, goods_detail_id, goods_name, goods_image, goods_price, specs, quantity)
+        VALUES (#{userId}, #{goodsId}, #{goodsDetailId}, #{goodsName}, #{goodsImage}, #{goodsPrice}, #{specs}, #{quantity})
     </insert>
 
     <!-- 根据用户ID、商品ID、规格查询购物车项 -->

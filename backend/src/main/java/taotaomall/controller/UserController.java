@@ -43,7 +43,7 @@ public class UserController {
         {
             String token = JWTUtils.getToken(String.valueOf(userformjdbc.getId()),userformjdbc.getUsername());
             Map<String, String> userMap = new HashMap<String, String>();
-            userMap.put("id", userformjdbc.getId());
+            userMap.put("id", String.valueOf(userformjdbc.getId()));
             userMap.put("username", userformjdbc.getUsername());
             userMap.put("token", token);
             return Result.success(userMap);

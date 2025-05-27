@@ -102,14 +102,21 @@ router.beforeEach(async (to, from, next) => {
   const { useUserStore } = await import('@/stores/user')
   const userStore = useUserStore()
 
-  // 优先从 localStorage 读取 token，防止刷新丢失
+  // 恢复 token
   if (!userStore.token) {
     const token = localStorage.getItem('token')
     if (token) {
       userStore.setToken(token)
     }
   }
-  
+  // 恢复 userInfo
+  if (!userStore.userInfo) {
+    const userInfo = localStorage.getItem('userInfo')
+    if (userInfo) {
+      userStore.setUserInfo(JSON.parse(userInfo))
+    }
+  }
+
   if (to.meta.requiresAuth && !userStore.token) {
     next('/login')
   } else {

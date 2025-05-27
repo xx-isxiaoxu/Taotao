@@ -2,6 +2,7 @@ package taotaomall.model;
 
 import lombok.Data;
 import java.util.Date;
+import java.sql.Timestamp;
 
 @Data
 public class Cart {
@@ -14,6 +15,6 @@ public class Cart {
     private Double goodsPrice;     // decimal(10,2)
     private String specs;          // text (JSON字符串)
     private Integer quantity;      // int
-    private Date createTime;       // datetime
+    private Timestamp createTime;
     private Date updateTime;       // datetime
 }

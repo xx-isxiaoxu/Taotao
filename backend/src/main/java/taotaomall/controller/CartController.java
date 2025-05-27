@@ -17,7 +17,7 @@ public class CartController {
     // 查询用户所有购物车项（分页）
     @GetMapping("/all")
     public Result<PageInfo<Cart>> getAllCart(@RequestParam(name = "userId") Long userId,
-                                             @RequestParam(name = "pageNum") Integer pageNum,
+                             @RequestParam(name = "pageNum") Integer pageNum,
                                              @RequestParam(name = "pageSize") Integer pageSize) {
         PageInfo<Cart> pageInfo = cartService.getAllCart(userId, pageNum, pageSize);
         return Result.success(pageInfo);
@@ -42,7 +42,7 @@ public class CartController {
     public Result<Void> deleteOne(@PathVariable Integer id) {
         int res = cartService.deleteOne(id);
         return res > 0 ? Result.success() : Result.failure(ResultCodeEnum.FAIL, "删除失败！");
-    }
+        }
 
     // 清空用户购物车
     @DeleteMapping("/deleteall/{userId}")
@@ -55,7 +55,7 @@ public class CartController {
     public Result<Integer> addCart(@RequestParam(name = "userId") Long userId,
                           @RequestParam(name = "goodsId") Integer goodsId,
                           @RequestParam(name = "specs") String specs)
-    {
+        {
         Cart cart = new Cart();
         cart.setUserId(userId);
         cart.setGoodsId(goodsId);
@@ -63,7 +63,7 @@ public class CartController {
         cart.setQuantity(1);
         int res = cartService.insertCart(cart);
         return res > 0 ? Result.success(res) : Result.failure(ResultCodeEnum.FAIL, "添加失败！");
-    }
+        }
 
     @PutMapping("/subone")
     public Result<Integer> subCart(@RequestParam(name = "userId") Long userId,
