@@ -5,7 +5,7 @@
       
       <div class="order-info">
         <div class="amount">
-          支付金额：<span class="price">¥{{ (orderInfo.amount || 0).toFixed(2) }}</span>
+          支付金额：<span class="price">¥{{ (orderInfo.totalAmount || 0).toFixed(2) }}</span>
         </div>
         <div class="order-no">
           订单编号：{{ orderInfo.orderNo || '--' }}
@@ -14,7 +14,7 @@
 
       <div class="payment-extra-actions" style="text-align:center;margin-bottom:20px;">
         <el-button @click="goBack">返回</el-button>
-        <el-button type="danger" @click="cancelOrder">取消订单</el-button>
+        <el-button type="danger" @click="handleCancelOrder">取消订单</el-button>
       </div>
 
       <div class="payment-methods">
@@ -47,90 +47,77 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useOrderStore } from '@/stores/order'
 import { ElMessage } from 'element-plus'
+import { getOrderDetail, payOrder } from '@/api/order'
+import { useOrderStore } from '@/stores/order'
 
 const route = useRoute()
 const router = useRouter()
 const orderStore = useOrderStore()
 
-// 初始化订单信息
-const orderInfo = ref({
-  amount: 0,
-  orderNo: '',
-  id: null
-})
+const orderInfo = ref({})
 const paymentMethod = ref('alipay')
 const loading = ref(false)
 const countdown = ref(0)
 let timer = null
 
 const startCountdown = () => {
+  if (!orderInfo.value.expireTime) return
   timer = setInterval(() => {
     const now = Date.now()
     const left = Math.floor((orderInfo.value.expireTime - now) / 1000)
     countdown.value = left > 0 ? left : 0
     if (countdown.value <= 0) {
       clearInterval(timer)
-      orderStore.cancelOrder(orderInfo.value.id)
-      ElMessage.error('订单超时已取消')
-      goToUserOrders()
+      handleCancelOrder()
     }
   }, 1000)
 }
 
-onMounted(async () => {
+const fetchOrderDetail = async () => {
   const orderId = route.params.orderId
   if (!orderId) {
     ElMessage.error('订单ID不存在')
-    router.push('/') // 如果没有订单ID则跳转到首页
+    router.push('/')
     return
   }
-
   loading.value = true
   try {
-    const order = await orderStore.getOrderDetail(orderId)
-    if (order) {
+    const res = await getOrderDetail(orderId)
+    const order = res.data?.data || res.data
+    if (order && order.id) {
       orderInfo.value = order
+      if (orderInfo.value.status === 'unpaid') {
+        startCountdown()
+      }
     } else {
       ElMessage.error('订单不存在')
       router.push('/')
     }
   } catch (error) {
-    console.error('获取订单信息失败:', error)
     ElMessage.error('获取订单信息失败')
     router.push('/')
   } finally {
     loading.value = false
   }
+}
 
-  startCountdown()
-})
-
+onMounted(fetchOrderDetail)
 onUnmounted(() => {
   if (timer) clearInterval(timer)
 })
 
-// 处理支付
 const handlePayment = async () => {
-  // 获取所有待支付订单ID
-  let orderIds = []
+  if (!orderInfo.value.id) return
   try {
-    orderIds = JSON.parse(localStorage.getItem('payOrderIds')) || []
-  } catch {
-    orderIds = [orderInfo.value.id]
-  }
-  if (!orderIds.length) orderIds = [orderInfo.value.id]
-
-  try {
-    orderIds.forEach(id => {
-      orderStore.payOrder({ orderId: id, method: paymentMethod.value })
-    })
-    // 支付成功后清除 payOrderIds
-    localStorage.removeItem('payOrderIds')
-    router.push(`/order/result/${orderInfo.value.id}`)
-  } catch (error) {
-    console.error('支付失败:', error)
+    const res = await payOrder(orderInfo.value.id)
+    if (res.data && res.data.success) {
+      ElMessage.success('支付成功')
+      router.push(`/order/result/${orderInfo.value.id}`)
+    } else {
+      ElMessage.error(res.data?.message || '支付失败')
+    }
+  } catch (e) {
     ElMessage.error('支付失败')
   }
 }
@@ -139,14 +126,18 @@ const goBack = () => {
   router.back()
 }
 
-const cancelOrder = async () => {
+const handleCancelOrder = async () => {
   if (!orderInfo.value.id) {
     ElMessage.error('订单信息不完整')
     return
   }
-  await orderStore.cancelOrder(orderInfo.value.id)
-  ElMessage.success('订单已取消')
-  goToUserOrders()
+  try {
+    orderStore.cancelOrder(orderInfo.value.id)
+    ElMessage.success('订单已取消')
+    goToUserOrders()
+  } catch (e) {
+    ElMessage.error('取消订单失败')
+  }
 }
 
 const goToUserOrders = () => {

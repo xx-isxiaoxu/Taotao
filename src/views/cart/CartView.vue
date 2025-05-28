@@ -218,6 +218,7 @@ const selectedCount = computed(() => selectedItems.value.length)
 
 const handleSelectAll = (val) => {
   cartStore.toggleSelectAll(val)
+  selectAll.value = val
 }
 
 const handleItemSelect = () => {
@@ -268,13 +269,11 @@ const goShopping = () => {
   router.push('/')
 }
 
-const handleCheckout = () => {
-  const selectedItems = cartStore.getSelectedItems()
-  if (selectedItems.length === 0) {
-    ElMessage.warning('请选择要结算的商品')
-    return
-  }
-  // 临时存储到localStorage
+const handleCheckout = async () => {
+  const selectedItems = cartStore.getSelectedItems().map(item => ({
+    ...item,
+    image: item.goodsImage || item.image || '/default.png'
+  }))
   localStorage.setItem('checkoutItems', JSON.stringify(selectedItems))
   router.push('/order/confirm')
 }

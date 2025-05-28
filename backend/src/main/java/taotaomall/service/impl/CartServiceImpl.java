@@ -71,13 +71,14 @@ public class CartServiceImpl implements CartService {
         // 插入订单列表
         for(Cart cart : cartList) {
             Userorder userorder = new Userorder(
-                cart.getQuantity(),
-                cart.getGoodsPrice(),
-                cart.getGoodsName(),
-                cart.getUserId()
+                cart.getUserId(),
+                cart.getGoodsPrice() * cart.getQuantity(),
+                "测试地址",
+                "测试收货人",
+                "13800000000"
             );
             orderDao.InsertOrder(userorder);
-    }
+        }
         // 删除购物车
         return cartDao.deleteAll(userId);
     }

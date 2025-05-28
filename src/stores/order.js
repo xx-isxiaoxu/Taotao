@@ -49,13 +49,30 @@ export const useOrderStore = defineStore('order', () => {
     }
   }
 
+  const formatSpecs = (specs) => {
+    if (!specs) return ''
+    let obj = specs
+    if (typeof specs === 'string') {
+      try {
+        obj = JSON.parse(specs)
+      } catch {
+        return specs
+      }
+    }
+    if (typeof obj === 'object') {
+      return Object.entries(obj).map(([k, v]) => `${k}: ${v}`).join('，')
+    }
+    return obj
+  }
+
   return {
     orders,
     createOrder,
     payOrder,
     cancelOrder,
     getOrderDetail,
-    removeOrder
+    removeOrder,
+    formatSpecs
   }
 }, {
   persist: true

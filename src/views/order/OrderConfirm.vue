@@ -27,24 +27,21 @@
       </div>
     </div>
     <div class="confirm-container">
+      <h2>确认订单</h2>
       <!-- 收货地址选择 -->
       <div class="address-section">
         <h2>收货地址</h2>
-        <el-radio-group v-model="selectedAddress">
-          <el-radio 
-            v-for="address in addressList" 
-            :key="address.id" 
+        <el-radio-group v-model="selectedAddressId">
+          <el-radio
+            v-for="address in addressList"
+            :key="address.id"
             :value="address.id"
           >
-            <div class="address-item">
-              <div class="receiver">
-                <span>{{ address.name }}</span>
-                <span>{{ address.phone }}</span>
-              </div>
-              <div class="address-detail">
-                {{ formatRegion(address.region) }} {{ address.address }}
-              </div>
-            </div>
+            {{ address.receiver }} {{ address.phone }}
+            {{ codeToText[address.province] || address.province }}
+            {{ codeToText[address.city] || address.city }}
+            {{ codeToText[address.district] || address.district }}
+            {{ address.detail }}
           </el-radio>
         </el-radio-group>
       </div>
@@ -52,27 +49,23 @@
       <!-- 商品清单 -->
       <div class="product-list">
         <h2>商品清单</h2>
-        <el-table :data="Array.isArray(orderProduct) ? orderProduct : [orderProduct]" style="width: 100%">
-          <el-table-column prop="image" label="商品图片" width="180">
+        <el-table :data="products" style="width: 100%; margin: 20px 0;">
+          <el-table-column label="图片" width="80">
             <template #default="{ row }">
-              <img :src="row.image" class="product-image" v-if="row && row.image"/>
+              <img :src="row.image" alt="商品图片" style="width:60px;height:60px;object-fit:cover;" />
             </template>
           </el-table-column>
-          <el-table-column prop="name" label="商品名称" />
-          <el-table-column prop="specs" label="规格" width="180">
+          <el-table-column prop="goodsName" label="商品名称" />
+          <el-table-column prop="specs" label="规格">
             <template #default="{ row }">
-              <span v-if="row && row.specs">{{ Object.entries(row.specs).map(([k, v]) => `${k}:${v}`).join('，') }}</span>
+              <span>{{ formatSpecs(row.specs) }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="price" label="单价" width="120">
+          <el-table-column prop="goodsPrice" label="单价" />
+          <el-table-column prop="quantity" label="数量" />
+          <el-table-column label="小计">
             <template #default="{ row }">
-              <span v-if="row">¥{{ row.price?.toFixed(2) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="quantity" label="数量" width="120" />
-          <el-table-column label="小计" width="120">
-            <template #default="{ row }">
-              <span v-if="row">¥{{ (row.price * row.quantity).toFixed(2) }}</span>
+              ¥{{ (row.goodsPrice * row.quantity).toFixed(2) }}
             </template>
           </el-table-column>
         </el-table>
@@ -116,7 +109,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useOrderStore } from '@/stores/order'
@@ -124,6 +117,8 @@ import { ElMessage } from 'element-plus'
 import { useCartStore } from '@/stores/cart'
 import { HomeFilled, ShoppingCart, User } from '@element-plus/icons-vue'
 import { codeToText } from 'element-china-area-data'
+import { createOrder } from '@/api/order'
+import { getAddressList } from '@/api/address'
 
 const route = useRoute()
 const router = useRouter()
@@ -132,27 +127,31 @@ const orderStore = useOrderStore()
 const cartStore = useCartStore()
 
 // 收货地址列表
-const addressList = ref(userStore.userInfo?.addressList || [])
-const selectedAddress = ref('')
+const addressList = ref([])
+const selectedAddressId = ref('')
 
 // 判断来源
-let orderProduct = ref(null)
+let products = ref(null)
 
 if (route.query.productId) {
   // 立即购买
-  orderProduct.value = {
+  products.value = [{
     id: route.query.productId,
-    name: route.query.name,
-    price: Number(route.query.price),
+    goodsName: route.query.name,
+    goodsPrice: Number(route.query.price),
     quantity: Number(route.query.quantity),
     specs: JSON.parse(route.query.specs),
     image: route.query.image
-  }
+  }]
 } else {
   // 购物车结算
   const items = localStorage.getItem('checkoutItems')
   if (items) {
-    orderProduct.value = JSON.parse(items)
+    // 兼容处理，确保每个商品都有 image 字段
+    products.value = JSON.parse(items).map(item => ({
+      ...item,
+      image: item.image || '' // 没有图片时给个空字符串或默认图片
+    }))
   } else {
     ElMessage.error('没有可结算的商品')
     router.push('/cart')
@@ -168,10 +167,10 @@ const selectedCoupon = ref('')
 
 // 计算金额
 const totalAmount = computed(() => {
-  if (Array.isArray(orderProduct.value)) {
-    return orderProduct.value.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  } else if (orderProduct.value) {
-    return orderProduct.value.price * orderProduct.value.quantity
+  if (Array.isArray(products.value)) {
+    return products.value.reduce((sum, item) => sum + item.goodsPrice * item.quantity, 0)
+  } else if (products.value) {
+    return products.value.goodsPrice * products.value.quantity
   }
   return 0
 })
@@ -188,41 +187,41 @@ const payAmount = computed(() => {
 
 // 提交订单
 const submitOrder = async () => {
-  if (!selectedAddress.value) {
+  if (!selectedAddressId.value) {
     ElMessage.warning('请选择收货地址')
     return
   }
-
   try {
-    const products = Array.isArray(orderProduct.value) ? orderProduct.value : [orderProduct.value]
-    const orderIds = []
-    for (let i = 0; i < products.length; i++) {
-      const product = products[i]
-      let amount = product.price * product.quantity
-      if (i === 0 && discountAmount.value > 0) {
-        amount -= discountAmount.value
-      }
-      const orderData = {
-        productId: product.id,
-        name: product.name,
-        image: product.image,
-        specs: product.specs,
-        price: product.price,
-        quantity: product.quantity,
-        addressId: selectedAddress.value,
-        couponId: selectedCoupon.value,
-        amount
-      }
-      const orderId = await orderStore.createOrder(orderData)
-      orderIds.push(orderId)
+    const address = addressList.value.find(a => a.id === selectedAddressId.value)
+    const orderData = {
+      orderNo: 'NO' + Date.now(),
+      userId: userStore.userInfo.id,
+      totalAmount: totalAmount.value,
+      status: 'unpaid',
+      address: `${codeToText[address.province] || address.province}${codeToText[address.city] || address.city}${codeToText[address.district] || address.district}${address.detail}`,
+      receiver: address.receiver,
+      phone: address.phone,
+      remark: '',
+      orderItemList: products.value.map(item => ({
+        goodsId: item.id,
+        goodsName: item.goodsName,
+        goodsImage: item.image,
+        goodsPrice: item.goodsPrice,
+        quantity: item.quantity,
+        specs: typeof item.specs === 'object' ? JSON.stringify(item.specs) : item.specs
+      }))
     }
-    // 结算后清空购物车中已结算的商品
-    products.forEach(item => {
-      cartStore.removeFromCart(item.id, item.specs)
-    })
-    // 跳转到第一个订单的支付页，并通过 query 或 localStorage 传递所有订单ID
-    localStorage.setItem('payOrderIds', JSON.stringify(orderIds))
-    router.push(`/order/payment/${orderIds[0]}`)
+    const res = await createOrder(orderData)
+    if (res.data && res.data.data && res.data.data.id) {
+      // 订单创建成功，清空购物车已结算商品
+      const selectedItems = JSON.parse(localStorage.getItem('checkoutItems') || '[]')
+      const ids = selectedItems.map(item => item.id)
+      await cartStore.removeItemsByIds(ids)
+      localStorage.removeItem('checkoutItems')
+      router.push(`/order/payment/${res.data.data.id}`)
+    } else {
+      ElMessage.error('创建订单失败')
+    }
   } catch (error) {
     ElMessage.error('创建订单失败')
   }
@@ -235,6 +234,32 @@ const formatRegion = (regionArr) => {
   if (!regionArr || !Array.isArray(regionArr)) return ''
   return regionArr.map(code => codeToText[code] || code).join(' ')
 }
+
+const formatSpecs = (specs) => {
+  if (!specs) return ''
+  let obj = specs
+  if (typeof specs === 'string') {
+    try {
+      obj = JSON.parse(specs)
+    } catch {
+      // 不是JSON字符串，直接返回
+      return specs
+    }
+  }
+  if (typeof obj === 'object') {
+    return Object.entries(obj).map(([k, v]) => `${k}: ${v}`).join('，')
+  }
+  return obj
+}
+
+onMounted(async () => {
+  if (userStore.userInfo && userStore.userInfo.id) {
+    const res = await getAddressList(userStore.userInfo.id)
+    if (res.data) {
+      addressList.value = res.data
+    }
+  }
+})
 </script>
 
 <style scoped>

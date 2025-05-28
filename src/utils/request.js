@@ -6,7 +6,12 @@ const request = axios.create({
 })
 
 // 可选：请求/响应拦截器
-// request.interceptors.request.use(...)
-// request.interceptors.response.use(...)
+request.interceptors.request.use(config => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers['Authorization'] = token
+  }
+  return config
+})
 
 export default request

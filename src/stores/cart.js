@@ -51,6 +51,10 @@ export const useCartStore = defineStore('cart', {
       const res = await getCartList(userId)
       this.cartItems = res.data?.data?.list || []
       this.totalPrice = this.cartItems.reduce((sum, item) => sum + item.goodsPrice * item.quantity, 0)
+      this.cartItems = this.cartItems.map(item => ({
+        ...item,
+        selected: false
+      }))
     },
     async addToCart(product, quantity = 1, specsObj = {}) {
       const userId = this.getUserIdOrWarn()
@@ -94,6 +98,21 @@ export const useCartStore = defineStore('cart', {
       const res = await payCart(userId)
       await this.fetchCart()
       return res
+    },
+    toggleSelectAll(val) {
+      this.cartItems.forEach(item => {
+        item.selected = val
+      })
+    },
+    getSelectedItems() {
+      return this.cartItems.filter(item => item.selected)
+    },
+    // 批量删除购物车项
+    async removeItemsByIds(ids) {
+      for (const id of ids) {
+        await this.removeFromCart(id)
+      }
+      await this.fetchCart()
     }
   }
 }) 

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="taotaomall.dao.OrderItemDao">
+    
+    <!-- 插入订单明细 -->
+    <insert id="insertOrderItem" parameterType="taotaomall.model.OrderItem" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO order_item 
+        (order_id, goods_id, goods_name, goods_image, goods_price, quantity, specs, create_time)
+        VALUES
+        (#{orderId}, #{goodsId}, #{goodsName}, #{goodsImage}, #{goodsPrice}, #{quantity}, #{specs}, #{createTime})
+    </insert>
+
+    <!-- 批量插入订单明细 -->
+    <insert id="batchInsertOrderItems" parameterType="java.util.List">
+        INSERT INTO order_item 
+        (order_id, goods_id, goods_name, goods_image, goods_price, quantity, specs, create_time)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.orderId}, #{item.goodsId}, #{item.goodsName}, #{item.goodsImage}, 
+             #{item.goodsPrice}, #{item.quantity}, #{item.specs}, #{item.createTime})
+        </foreach>
+    </insert>
+
+    <!-- 根据订单ID查询订单明细列表 -->
+    <select id="getOrderItemsByOrderId" parameterType="long" resultType="taotaomall.model.OrderItem">
+        SELECT * FROM order_item WHERE order_id = #{orderId}
+    </select>
+
+    <!-- 根据商品ID查询订单明细列表 -->
+    <select id="getOrderItemsByGoodsId" parameterType="long" resultType="taotaomall.model.OrderItem">
+        SELECT * FROM order_item WHERE goods_id = #{goodsId}
+    </select>
+
+    <!-- 删除订单明细 -->
+    <delete id="deleteOrderItem" parameterType="long">
+        DELETE FROM order_item WHERE id = #{id}
+    </delete>
+
+    <!-- 根据订单ID删除订单明细 -->
+    <delete id="deleteOrderItemsByOrderId" parameterType="long">
+        DELETE FROM order_item WHERE order_id = #{orderId}
+    </delete>
+
+</mapper> 

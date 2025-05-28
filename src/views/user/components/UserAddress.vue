@@ -8,13 +8,13 @@
     <el-table-column label="收货信息" min-width="400">
       <template #default="{ row }">
         <div class="address-info">
-          <span class="name">{{ row.name }}</span>
+          <span class="name">{{ row.receiver }}</span>
           <span class="phone">{{ row.phone }}</span>
           <span class="address">{{ formatAddress(row) }}</span>
         </div>
       </template>
     </el-table-column>
-    <el-table-column prop="address" label="详细地址" />
+    <el-table-column prop="detail" label="详细地址" />
     <el-table-column label="操作" width="200">
     <template #default="{ row }">
       <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
@@ -92,9 +92,11 @@ import { ref, watch, nextTick, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { regionData, codeToText } from 'element-china-area-data'
+import { getAddressList, addAddress, updateAddress, deleteAddress, setDefaultAddress } from '@/api/address'
 
 const userStore = useUserStore()
-const addressList = ref(userStore.userInfo.addressList || [])
+const userId = userStore.userInfo.id
+const addressList = ref([])
 const dialogVisible = ref(false)
 const dialogType = ref('add')
 const addressForm = ref({
@@ -120,10 +122,11 @@ const rules = {
 // regionData 就是完整的省市区数据，直接赋值给 regionOptions 即可
 const regionOptions = regionData
 
-// 监听 userInfo.addressList 变化，保持同步
-watch(() => userStore.userInfo.addressList, (val) => {
-  addressList.value = val || []
-}, { immediate: true })
+const fetchAddressList = async () => {
+  if (!userId) return
+  const res = await getAddressList(userId)
+  addressList.value = res.data || []
+}
 
 const handleAddAddress = () => {
   dialogType.value = 'add'
@@ -134,48 +137,56 @@ const handleAddAddress = () => {
 
 const handleEdit = (row) => {
   dialogType.value = 'edit'
-  addressForm.value = { ...row }
+  addressForm.value = {
+    region: [row.province, row.city, row.district].filter(Boolean),
+    address: row.detail,
+    name: row.receiver,
+    phonePrefix: '+86',
+    phone: row.phone,
+    isDefault: row.isDefault,
+    id: row.id
+  }
   dialogVisible.value = true
   nextTick(() => formRef.value && formRef.value.clearValidate())
 }
 
 const handleDelete = (row) => {
-  ElMessageBox.confirm('确定要删除该地址吗？', '提示', { type: 'warning' }).then(() => {
-    addressList.value = addressList.value.filter(item => item.id !== row.id)
-    saveAddressList()
+  ElMessageBox.confirm('确定要删除该地址吗？', '提示', { type: 'warning' }).then(async () => {
+    await deleteAddress(row.id)
     ElMessage.success('删除成功')
+    fetchAddressList()
   })
 }
 
 const handleSaveAddress = async () => {
   try {
     await formRef.value.validate()
-    // 检查是否重复（收货人+手机号+详细地址都相同视为重复）
-    const isDuplicate = addressList.value.some(item =>
-      item.name === addressForm.value.name &&
-      item.phone === addressForm.value.phone &&
-      item.address === addressForm.value.address &&
-      (dialogType.value === 'add' || item.id !== addressForm.value.id) // 编辑时排除自己
-    )
-    if (isDuplicate) {
-      ElMessage.error('该地址已存在，请勿重复添加')
-      return
+    const [province, city, district] = addressForm.value.region || []
+    const payload = {
+      userId,
+      receiver: addressForm.value.name,
+      phone: addressForm.value.phone,
+      province,
+      city,
+      district,
+      detail: addressForm.value.address,
+      isDefault: addressForm.value.isDefault
     }
     if (dialogType.value === 'add') {
-      addressForm.value.id = Date.now()
-      addressList.value.push({ ...addressForm.value })
+      await addAddress(payload)
     } else {
-      const idx = addressList.value.findIndex(item => item.id === addressForm.value.id)
-      if (idx !== -1) addressList.value[idx] = { ...addressForm.value }
+      await updateAddress(addressForm.value.id, { ...payload, id: addressForm.value.id })
     }
-    saveAddressList()
     dialogVisible.value = false
-    addressForm.value = { region: [], address: '', name: '', phonePrefix: '+86', phone: '', isDefault: false, id: null }
-    formRef.value && formRef.value.clearValidate()
     ElMessage.success('保存成功')
-  } catch (e) {
-    // 校验失败，不关闭弹窗
-  }
+    fetchAddressList()
+  } catch (e) {}
+}
+
+const handleSetDefault = async (row) => {
+  await setDefaultAddress(userId, row.id)
+  ElMessage.success('设置默认地址成功')
+  fetchAddressList()
 }
 
 function saveAddressList() {
@@ -183,8 +194,11 @@ function saveAddressList() {
 }
 
 const formatAddress = (row) => {
-  const regionText = row.region ? row.region.map(code => codeToText[code]).join(' ') : ''
-  return `${regionText} ${row.address}`
+  const regionText = [row.province, row.city, row.district]
+    .map(code => codeToText[code] || code)
+    .filter(Boolean)
+    .join(' ')
+  return `${regionText} ${row.detail || ''}`
 }
 
 const renderRoute = () => {
@@ -196,10 +210,7 @@ const renderRoute = () => {
   // ...地图初始化代码
 }
 
-onMounted(async () => {
-  await nextTick()
-  // renderRoute() // 通常只用watch即可
-})
+onMounted(fetchAddressList)
 </script>
 
 <style scoped>

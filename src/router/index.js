@@ -116,7 +116,7 @@ router.beforeEach(async (to, from, next) => {
       userStore.setUserInfo(JSON.parse(userInfo))
     }
   }
-
+  
   if (to.meta.requiresAuth && !userStore.token) {
     next('/login')
   } else {

@@ -27,16 +27,13 @@
           <user-profile />
         </el-tab-pane>
         <el-tab-pane label="收货地址" name="address">
-          <UserAddress :address-list="userInfo?.addressList ?? []" />
+          <UserAddress :user-id="userStore.userInfo.id" />
         </el-tab-pane>
         <el-tab-pane label="我的订单" name="orders">
           <user-orders />
         </el-tab-pane>
         <el-tab-pane label="我的收藏" name="favorites">
           <user-favorites />
-        </el-tab-pane>
-        <el-tab-pane label="数据统计" name="statistics">
-          <user-statistics />
         </el-tab-pane>
       </el-tabs>
     </el-card>
@@ -51,7 +48,6 @@ import UserProfile from './components/UserProfile.vue'
 import UserAddress from './components/UserAddress.vue'
 import UserOrders from './components/UserOrders.vue'
 import UserFavorites from './components/UserFavorites.vue'
-import UserStatistics from './UserStatistics.vue'
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -205,13 +201,3 @@ onMounted(() => {
   }
 }
 </style>
-
-
-// 在组件导入列表中添加
-const components = {
-  UserProfile,
-  UserAddress,
-  UserOrders,
-  UserFavorites,
-  UserStatistics
-}

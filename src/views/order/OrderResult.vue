@@ -9,7 +9,7 @@
         <template #extra>
           <div class="order-info" v-if="orderInfo">
             <p>订单号：{{ orderInfo.orderNo || '--' }}</p>
-            <p>支付金额：¥{{ (orderInfo.amount || 0).toFixed(2) }}</p>
+            <p>支付金额：¥{{ (orderInfo.totalAmount || 0).toFixed(2) }}</p>
             <p>支付时间：{{ formatDate(orderInfo.payTime) }}</p>
           </div>
           <el-button type="primary" @click="viewOrder">查看订单</el-button>
@@ -23,18 +23,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useOrderStore } from '@/stores/order'
+import { getOrderDetail } from '@/api/order'
 import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
-const orderStore = useOrderStore()
-const orderInfo = ref({
-  amount: 0,
-  orderNo: '',
-  payTime: new Date(),
-  id: null
-})
+const orderInfo = ref({})
 
 onMounted(async () => {
   const orderId = route.params.orderId
@@ -43,17 +37,16 @@ onMounted(async () => {
     router.push('/')
     return
   }
-
   try {
-    const order = await orderStore.getOrderDetail(orderId)
-    if (order) {
+    const res = await getOrderDetail(orderId)
+    const order = res.data?.data || res.data
+    if (order && order.id) {
       orderInfo.value = order
     } else {
       ElMessage.error('订单不存在')
       router.push('/')
     }
   } catch (error) {
-    console.error('获取订单信息失败:', error)
     ElMessage.error('获取订单信息失败')
     router.push('/')
   }
@@ -65,7 +58,7 @@ const formatDate = (date) => {
 }
 
 const viewOrder = () => {
-  router.push('/user/orders')
+  router.push('/user?tab=orders')
 }
 
 const goHome = () => {

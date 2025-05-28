@@ -3,16 +3,44 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="taotaomall.dao.OrderDao">
+    <!-- 插入订单 -->
     <insert id="InsertOrder" parameterType="taotaomall.model.Userorder" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO userorder (goodsname, number, price,time,uid )VALUES(#{goodsname}, #{number}, #{price},now(),#{uid})
+        INSERT INTO `order` 
+        (order_no, user_id, total_amount, status, address, receiver, phone, create_time, pay_time, cancel_time, finish_time, remark, expire_time)
+        VALUES
+        (#{orderNo}, #{userId}, #{totalAmount}, #{status}, #{address}, #{receiver}, #{phone},
+         #{createTime}, #{payTime}, #{cancelTime}, #{finishTime}, #{remark}, #{expireTime})
     </insert>
-    <select id="getAllOrder" parameterType="int" resultType="taotaomall.model.Userorder">
-        SELECT * FROM userorder WHERE uid = #{id}
+
+    <!-- 查询用户所有订单 -->
+    <select id="getAllOrder" parameterType="long" resultType="taotaomall.model.Userorder">
+        SELECT * FROM `order` WHERE user_id = #{userId}
     </select>
-    <delete id="deleteOneOrder" parameterType="int">
-        DELETE FROM userorder WHERE id = #{id}
+
+    <!-- 删除单个订单 -->
+    <delete id="deleteOneOrder" parameterType="long">
+        DELETE FROM `order` WHERE id = #{id}
     </delete>
-    <delete id="deleteAllOrder" parameterType="int">
-        DELETE FROM userorder WHERE uid = #{uid}
+
+    <!-- 删除用户所有订单 -->
+    <delete id="deleteAllOrder" parameterType="long">
+        DELETE FROM `order` WHERE user_id = #{userId}
+    </delete>
+
+    <!-- 查询单个订单 -->
+    <select id="getOrderById" parameterType="long" resultType="taotaomall.model.Userorder">
+        SELECT *, expire_time FROM `order` WHERE id = #{orderId}
+    </select>
+
+    <!-- 新增：更新订单支付状态和支付时间 -->
+    <update id="updateOrderPayStatus">
+        UPDATE `order`
+        SET status = #{status}, pay_time = #{payTime}
+        WHERE id = #{orderId}
+    </update>
+
+    <!-- 新增：删除订单明细 -->
+    <delete id="deleteOrderItemsByOrderId" parameterType="long">
+        DELETE FROM order_item WHERE order_id = #{orderId}
     </delete>
 </mapper>

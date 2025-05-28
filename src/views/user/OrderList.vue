@@ -7,10 +7,11 @@
       <el-tab-pane label="待付款" name="unpaid" />
       <el-tab-pane label="待发货" name="unshipped" />
       <el-tab-pane label="已完成" name="completed" />
+      <el-tab-pane label="已取消" name="cancelled" />
     </el-tabs>
 
     <div class="order-items">
-      <el-card v-for="order in orders" :key="order.id" class="order-item">
+      <el-card v-for="order in filteredOrders" :key="order.id" class="order-item">
         <div class="order-header">
           <span class="order-no">订单号：{{ order.orderNo }}</span>
           <span class="order-status">{{ getStatusText(order.status) }}</span>
@@ -18,7 +19,7 @@
         
         <div class="order-content">
           <div class="product-info">
-            <img :src="order.productImage" :alt="order.productName" class="product-image">
+            <img :src="order.goodsImage || '/default.png'" :alt="order.productName" class="product-image">
             <div class="product-details">
               <h3>{{ order.productName }}</h3>
               <p class="specs">{{ order.specs }}</p>
@@ -50,46 +51,48 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useOrderStore } from '@/stores/order'
+import { ref, onMounted, computed } from 'vue'
+import { getOrderList } from '@/api/order'
+import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const orderStore = useOrderStore()
+const userStore = useUserStore()
 const activeTab = ref('all')
 const orders = ref([])
 
 const statusMap = {
-  'unpaid': '待付款',
-  'unshipped': '待发货',
-  'completed': '已完成'
+  unpaid: '待付款',
+  paid: '已支付',
+  cancelled: '已取消',
+  unshipped: '待发货',
+  completed: '已完成'
 }
 
-const getStatusText = (status) => {
-  return statusMap[status] || status
-}
+const formatStatus = (status) => statusMap[status] || status
 
-const formatDate = (date) => {
-  return new Date(date).toLocaleString()
-}
+const formatDate = (date) => date ? new Date(date).toLocaleString() : '--'
 
-const loadOrders = async (status = 'all') => {
-  orders.value = await orderStore.getOrderList(status)
+const filteredOrders = computed(() => {
+  if (activeTab.value === 'all') return orders.value
+  return orders.value.filter(order => order.status === activeTab.value)
+})
+
+const loadOrders = async () => {
+  const res = await getOrderList(userStore.userInfo.id)
+  const data = res.data?.data || res.data
+  orders.value = data.list || []
 }
 
 const handleTabClick = () => {
-  loadOrders(activeTab.value)
+  // 这里只需重新过滤，不需要重新请求
 }
 
 const handlePay = (order) => {
   router.push(`/order/payment/${order.id}`)
 }
 
-onMounted(() => {
-  // 初始化订单store
-  orderStore.init()
-  loadOrders()
-})
+onMounted(loadOrders)
 </script>
 
 <style scoped>
