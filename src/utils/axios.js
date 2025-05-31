@@ -14,6 +14,8 @@ instance.interceptors.request.use(
         const token = localStorage.getItem('token')
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`
+            // 调试用：打印请求头
+            console.log('请求头 Authorization:', config.headers['Authorization'])
         }
         return config
     },
@@ -24,12 +26,21 @@ instance.interceptors.request.use(
 
 // 响应拦截器
 instance.interceptors.response.use(
-    response => {
-        return response
-    },
-    error => {
-        if (error.response?.status === 401) {
-            // token过期或无效，清除token并跳转到登录页
+    response => response,
+    async error => {
+        if (error.response?.status === 401 && error.response.data.message === 'token过期了！') {
+            const refreshToken = localStorage.getItem('refreshToken')
+            if (refreshToken) {
+                // 调用刷新 token 接口
+                const res = await axios.post('/api/auth/refreshToken', { refreshToken })
+                if (res.data?.data?.token) {
+                    localStorage.setItem('token', res.data.data.token)
+                    // 重新发起原请求
+                    error.config.headers['Authorization'] = `Bearer ${res.data.data.token}`
+                    return instance(error.config)
+                }
+            }
+            // 刷新失败，跳转登录
             localStorage.removeItem('token')
             window.location.href = '/login'
         }

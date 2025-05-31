@@ -18,4 +18,9 @@ public class UserDaoImpl implements UserDao{
     public User login(String username, String password) {
         return null;
     }
+
+    @Override
+    public User findByPhone(String phone) {
+        return null;
+    }
 }

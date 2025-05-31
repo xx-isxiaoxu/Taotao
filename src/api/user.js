@@ -12,3 +12,13 @@ export function register(data) {
 export function login(data) {
   return request.post('/user/login', data)
 }
+
+// 发送手机验证码
+export function sendCode(phone) {
+  return request.post('/api/auth/sendCode', { phone })
+}
+
+// 手机验证码登录
+export function loginByPhone(data) {
+  return request.post('/api/auth/loginByPhone', data)
+}

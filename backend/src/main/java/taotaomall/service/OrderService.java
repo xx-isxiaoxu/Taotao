@@ -26,4 +26,7 @@ public interface OrderService {
 
     // 新增
     Result<?> payOrder(Long orderId);
+
+    // 更新订单
+    int updateOrder(Userorder order);
 }

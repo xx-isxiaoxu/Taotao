@@ -7,7 +7,8 @@ import taotaomall.model.User;
 @Service
 public interface UserService {
     //注册业务
-    User registerService(User user);
+    int register(User user);
     //登录业务
-    User loginService(String username,String password);
+    User loginService(String username, String password);
+    User findByPhone(String phone);
 }

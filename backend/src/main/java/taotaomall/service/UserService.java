@@ -10,4 +10,6 @@ public interface UserService {
     User registerService(User user);
     //登录业务
     User loginService(String username,String password);
+    User findByPhone(String phone);
+    int register(User user);
 }

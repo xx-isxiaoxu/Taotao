@@ -1,5 +1,6 @@
 package taotaomall.service.impl;
 
+import com.alipay.api.AlipayApiException;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import taotaomall.dao.OrderItemDao;
 import taotaomall.model.OrderItem;
 import taotaomall.model.Userorder;
 import taotaomall.service.OrderService;
+import taotaomall.utils.PayUtil;
 import taotaomall.utils.Result;
 import taotaomall.utils.ResultCodeEnum;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private OrderItemDao orderItemDao;
+
+    @Autowired
+    private PayUtil payUtil;
 
     @Override
     public PageInfo<Userorder> getAllOrder(Long userId, Integer pageNum, Integer pageSize) {
@@ -108,12 +113,32 @@ public class OrderServiceImpl implements OrderService {
         if (order.getExpireTime() != null && now > order.getExpireTime()) {
             return Result.failure(ResultCodeEnum.FAIL, "订单已超时，无法支付");
         }
+
         // 3. 更新状态和支付时间
-        int updated = orderDao.updateOrderPayStatus(orderId, "paid", new java.sql.Timestamp(now));
+        try {
+            String subject = "淘淘商城订单-" + order.getOrderNo();
+            String returnUrl = "http://localhost:8080/#/order/result/" + order.getId();
+            payUtil.sendRequestToAlipay(order.getOrderNo().toString(), order.getTotalAmount().floatValue(), subject, returnUrl);
+        }catch (AlipayApiException e) {
+            // 处理异常，比如记录日志、返回错误信息
+            e.printStackTrace();
+            return Result.failure(ResultCodeEnum.FAIL, "支付宝接口异常：" + e.getMessage());
+        }
+        order.setStatus("unpaid");
+        order.setPayTime(new java.sql.Timestamp(now));
+//        int updated = orderDao.updateOrderPayStatus(orderId, "unpaid", new java.sql.Timestamp(now));
+        int updated = orderDao.updateOrder(order);
         if (updated > 0) {
             return Result.success();
         } else {
             return Result.failure(ResultCodeEnum.FAIL, "支付失败");
         }
     }
+
+    @Override
+    public int updateOrder(Userorder order) {
+        return orderDao.updateOrder(order);
+    }
+
+    
 }

@@ -32,7 +32,7 @@
       </div>
 
       <div class="payment-action">
-        <el-button type="primary" size="large" @click="handlePayment">
+        <el-button type="primary" size="large" @click="pay">
           立即支付
         </el-button>
       </div>
@@ -48,7 +48,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getOrderDetail, payOrder } from '@/api/order'
+import { getOrderDetail, reqAliPay } from '@/api/order'
 import { useOrderStore } from '@/stores/order'
 
 const route = useRoute()
@@ -107,18 +107,23 @@ onUnmounted(() => {
   if (timer) clearInterval(timer)
 })
 
-const handlePayment = async () => {
+const pay = async () => {
   if (!orderInfo.value.id) return
+  if (paymentMethod.value !== 'alipay') {
+    ElMessage.warning('目前仅支持支付宝沙箱支付')
+    return
+  }
   try {
-    const res = await payOrder(orderInfo.value.id)
-    if (res.data && res.data.success) {
-      ElMessage.success('支付成功')
-      router.push(`/order/result/${orderInfo.value.id}`)
-    } else {
-      ElMessage.error(res.data?.message || '支付失败')
-    }
+    const data = { id: orderInfo.value.id }
+    const res = await reqAliPay(data)
+    console.log('后端返回:', res.data)
+    const html = res.data
+
+    const blob = new Blob([html], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_self')
   } catch (e) {
-    ElMessage.error('支付失败')
+    ElMessage.error('拉起支付宝支付失败')
   }
 }
 

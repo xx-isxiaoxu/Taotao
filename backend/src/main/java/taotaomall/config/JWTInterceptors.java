@@ -21,7 +21,7 @@ public class JWTInterceptors implements HandlerInterceptor {
         String uri = request.getRequestURI();
 
         // 放行不需要校验token的接口和静态资源
-        if (uri.equals("/api/goods/new") || uri.equals("/api/goods/hot") || uri.startsWith("/img/")) {
+        if (uri.equals("/api/goods/new") || uri.equals("/api/goods/hot") || uri.startsWith("/img/")||uri.equals("/api/alipay/toSuccess")) {
             return true;
         }
 
@@ -29,8 +29,12 @@ public class JWTInterceptors implements HandlerInterceptor {
         String token = request.getHeader("token");
         if (token == null || token.isEmpty()) {
             String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                token = authHeader.substring(7);
+            if (authHeader != null) {
+                if (authHeader.startsWith("Bearer ")) {
+                    token = authHeader.substring(7);
+                } else {
+                    token = authHeader; // 兼容前端直接传token
+                }
             }
         }
 

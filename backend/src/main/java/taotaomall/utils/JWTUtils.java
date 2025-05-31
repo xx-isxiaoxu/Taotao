@@ -23,6 +23,22 @@ public class JWTUtils {
 
     private static Integer expireTime;
 
+    public static String getRefreshToken(String userId, String userName) {
+        Calendar instance = Calendar.getInstance();
+        // 设置 refresh token 过期时间为 7天
+        instance.add(Calendar.DAY_OF_MONTH, 7);
+
+        JWTCreator.Builder builder = JWT.create();
+
+        Map<String, String> payload = new HashMap<>();
+        payload.put("id", userId);
+        payload.put("name", userName);
+        payload.forEach(builder::withClaim);
+
+        String token = builder.withExpiresAt(instance.getTime())
+                .sign(Algorithm.HMAC256(SING));
+        return token;
+    }
 
     public void setSING(String SING) {
         JWTUtils.SING = SING;

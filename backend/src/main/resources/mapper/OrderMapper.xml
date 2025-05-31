@@ -36,11 +36,19 @@
     <update id="updateOrderPayStatus">
         UPDATE `order`
         SET status = #{status}, pay_time = #{payTime}
-        WHERE id = #{orderId}
+        WHERE order_no = #{orderNo}
     </update>
 
     <!-- 新增：删除订单明细 -->
     <delete id="deleteOrderItemsByOrderId" parameterType="long">
         DELETE FROM order_item WHERE order_id = #{orderId}
     </delete>
+
+    <update id="updateOrder" parameterType="taotaomall.model.Userorder">
+        UPDATE `order`
+        SET order_no = #{orderNo},
+            status = #{status},
+            pay_time = #{payTime}
+        WHERE id = #{id}
+    </update>
 </mapper>

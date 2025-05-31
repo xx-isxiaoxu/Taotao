@@ -80,15 +80,7 @@ const router = createRouter({
       path: '/:pathMatch(.*)*',
       redirect: { path: '/user', query: { tab: 'orders' } }
     },
-    {
-      path: '/user/statistics',
-      name: 'UserStatistics',
-      component: () => import('@/views/user/UserStatistics.vue'),
-      meta: {
-        title: '数据统计',
-        requiresAuth: true
-      }
-    },
+
     {
       path: '/search',
       name: 'SearchResult',

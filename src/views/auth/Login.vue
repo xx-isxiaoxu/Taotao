@@ -5,7 +5,11 @@
     </div>
     <div class="auth-box">
       <h2>登录淘淘账号</h2>
-      <el-form :model="loginForm" :rules="rules" ref="loginFormRef">
+      <el-tabs v-model="loginType">
+        <el-tab-pane label="账号密码登录" name="account"></el-tab-pane>
+        <el-tab-pane label="手机验证码登录" name="phone"></el-tab-pane>
+      </el-tabs>
+      <el-form v-if="loginType === 'account'" :model="loginForm" :rules="rules" ref="loginFormRef">
         <el-form-item prop="username">   
           <el-input v-model="loginForm.username" placeholder="用户名">
             <template #prefix>
@@ -31,6 +35,35 @@
           </el-button>
         </el-form-item>
       </el-form>
+      <el-form v-else :model="phoneForm" :rules="phoneRules" ref="phoneFormRef">
+        <el-form-item prop="phone">
+          <el-input v-model="phoneForm.phone" placeholder="手机号">
+            <template #prefix>
+              <el-icon><User /></el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <el-form-item prop="code">
+          <el-input v-model="phoneForm.code" placeholder="验证码" style="width: 60%;">
+            <template #prefix>
+              <el-icon><Lock /></el-icon>
+            </template>
+          </el-input>
+          <el-button :disabled="countdown > 0" @click="sendCode" style="margin-left: 10px;">
+            {{ countdown > 0 ? countdown + 's后重试' : '获取验证码' }}
+          </el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button 
+            type="primary" 
+            class="submit-btn" 
+            :loading="loading"
+            @click="handlePhoneLogin"
+          >
+            {{ loading ? '登录中...' : '登录' }}
+          </el-button>
+        </el-form-item>
+      </el-form>
       <div class="auth-footer">
         <router-link to="/register">注册账号</router-link>
         <a href="#">忘记密码?</a>
@@ -49,11 +82,18 @@ import { ElMessage } from 'element-plus'
 const router = useRouter()
 const userStore = useUserStore()
 const loginFormRef = ref(null)
+const phoneFormRef = ref(null)
 const loading = ref(false)
+const loginType = ref('account')
 
 const loginForm = reactive({
   username: '',
   password: ''
+})
+
+const phoneForm = reactive({
+  phone: '',
+  code: ''
 })
 
 const rules = {
@@ -68,6 +108,32 @@ const rules = {
   ]
 }
 
+const phoneRules = {
+  phone: [
+    { required: true, message: '请输入手机号', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' }
+  ],
+  code: [
+    { required: true, message: '请输入验证码', trigger: 'blur' }
+  ]
+}
+
+// 验证码倒计时
+const countdown = ref(0)
+let timer = null
+const sendCode = async () => {
+  if (!phoneForm.phone || !/^1[3-9]\d{9}$/.test(phoneForm.phone)) {
+    ElMessage.error('请输入正确的手机号')
+    return
+  }
+  try {
+    await userStore.handleSendCode(phoneForm.phone)
+    // 这里开发环境下会弹出验证码
+  } catch (err) {
+    ElMessage.error(err.message || '发送验证码失败')
+  }
+}
+
 const handleLogin = async () => {
   if (!loginFormRef.value) return
   
@@ -80,6 +146,21 @@ const handleLogin = async () => {
       password: loginForm.password
     })
     console.log('登录返回', res)
+    ElMessage.success('登录成功')
+    router.push('/home')
+  } catch (error) {
+    ElMessage.error(error.message || '登录失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+const handlePhoneLogin = async () => {
+  if (!phoneFormRef.value) return
+  try {
+    await phoneFormRef.value.validate()
+    loading.value = true
+    await userStore.loginByPhone(phoneForm.phone, phoneForm.code)
     ElMessage.success('登录成功')
     router.push('/home')
   } catch (error) {

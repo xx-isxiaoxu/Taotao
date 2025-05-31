@@ -12,7 +12,8 @@ public enum ResultCodeEnum {
     /*参数错误:1001-1999*/
     PARAMS_IS_INVALID(1001, "参数无效"),
     PARAMS_IS_BLANK(1002, "参数为空"),
-    USER_IS_EXITES(1003,"用户名已存在");
+    USER_IS_EXITES(1003,"用户名已存在"),
+    PARAMS_ERROR(400, "参数错误");
 
     ;
     /**

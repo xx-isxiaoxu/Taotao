@@ -28,7 +28,11 @@ public class WebConfig implements WebMvcConfigurer {
                     "/api/cart/**",
                     "/api/address/**",
                     "/api/order/**",
-                    "/api/orderItem/**"
+                    "/api/orderItem/**",
+                    "/api/auth/**",
+                    "/api/alipay/**",
+                    "/api/order/pay/**",
+                    "/api/order/success/**"
                 );
     }
 

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
-import { register, login } from '@/api/user'
+import { register, login, sendCode, loginByPhone as loginByPhoneApi } from '@/api/user'
+import { ElMessage } from 'element-plus'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -135,6 +136,41 @@ export const useUserStore = defineStore('user', {
           this.setUserInfo(userInfo)
         }
         return res.data
+      } catch (err) {
+        throw err
+      }
+    },
+
+    async loginByPhone(phone, code) {
+      try {
+        const res = await loginByPhoneApi({ phone, code })
+        // 兼容扁平结构和 data 包裹结构
+        const data = res.data.data || res.data
+        if (data && data.token) {
+          this.setToken(data.token)
+          const userInfo = {
+            id: data.id || data.userId,
+            username: data.username || data.userName || phone,
+            phone: data.phone || phone
+          }
+          this.setUserInfo(userInfo)
+        }
+        return res.data
+      } catch (err) {
+        throw err
+      }
+    },
+
+    async handleSendCode(phone) {
+      try {
+        const res = await sendCode(phone)
+        if (res.data.success) {
+          // 开发环境下，直接显示验证码
+          ElMessage.success('验证码已发送：' + res.data.code)
+          // 生产环境下，不显示code
+        } else {
+          ElMessage.error(res.data.message)
+        }
       } catch (err) {
         throw err
       }

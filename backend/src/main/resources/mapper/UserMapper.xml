@@ -5,8 +5,8 @@
 <mapper namespace="taotaomall.dao.UserDao">
     <!-- 注册用户 -->
     <insert id="register" parameterType="taotaomall.model.User" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO user(username, password, create_time) 
-        VALUES (#{username}, #{password}, #{createTime})
+        INSERT INTO user(username, password, phone, create_time)
+        VALUES (#{username}, #{password}, #{phone}, #{createTime})
     </insert>
 
     <!-- 根据用户名查找用户 -->
@@ -21,5 +21,19 @@
         SELECT id, username, password, create_time as createTime
         FROM user 
         WHERE username = #{param1} AND password = #{param2}
+    </select>
+
+    <!-- 根据手机号查找用户 -->
+    <select id="findByPhone" parameterType="java.lang.String" resultType="taotaomall.model.User">
+        SELECT id, username, password, phone, create_time as createTime
+        FROM user
+        WHERE phone = #{phone}
+    </select>
+
+    <!-- 根据手机号查找用户（只查手机号） -->
+    <select id="findByPhoneOnly" parameterType="java.lang.String" resultType="taotaomall.model.User">
+        SELECT id, username, password, phone, create_time as createTime
+        FROM user
+        WHERE phone = #{phone}
     </select>
 </mapper>

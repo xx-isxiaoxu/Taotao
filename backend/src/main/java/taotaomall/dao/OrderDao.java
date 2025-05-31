@@ -12,6 +12,7 @@ public interface OrderDao {
     Userorder getOrderById(Long orderId);
     int deleteOneOrder(Long id);
     int deleteAllOrder(Long userId);
-    int updateOrderPayStatus(Long orderId, String status, java.sql.Timestamp payTime);
+    int updateOrderPayStatus(String orderNo, String status, java.sql.Timestamp payTime);
     int deleteOrderItemsByOrderId(Long orderId);
+    int updateOrder(Userorder order);
 }

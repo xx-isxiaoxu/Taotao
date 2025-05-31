@@ -27,6 +27,13 @@
             </template>
           </el-input>
         </el-form-item>
+        <el-form-item prop="phone">
+          <el-input v-model="registerForm.phone" placeholder="手机号">
+            <template #prefix>
+              <el-icon><User /></el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" class="submit-btn" :loading="loading" @click="handleRegister">
             {{ loading ? '注册中...' : '注册' }}
@@ -56,7 +63,8 @@ const loading = ref(false)
 const registerForm = reactive({
   username: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
+  phone: ''
 })
 
 const validatePass2 = (rule, value, callback) => {
@@ -79,6 +87,10 @@ const rules = {
   confirmPassword: [
     { required: true, message: '请再次输入密码', trigger: 'blur' },
     { validator: validatePass2, trigger: 'blur' }
+  ],
+  phone: [
+    { required: true, message: '请输入手机号', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '手机号格式不正确', trigger: 'blur' }
   ]
 }
 
@@ -90,7 +102,8 @@ const handleRegister = async () => {
       try {
         const res = await userStore.registerUser({
           username: registerForm.username,
-          password: registerForm.password
+          password: registerForm.password,
+          phone: registerForm.phone
         })
         ElMessage.success('注册成功')
         router.push('/home')

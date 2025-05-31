@@ -29,3 +29,5 @@ export function cancelOrder(orderId) {
 export function deleteOrder(orderId) {
   return request.delete(`/api/order/delete/${orderId}`)
 }
+//沙箱支付
+export const reqAliPay = (data) => request.post('/api/alipay/pay', data)

@@ -13,4 +13,6 @@ public interface UserDao {
     
     // 用户登录
     User login(String username, String password);
+
+    User findByPhone(String phone);
 }
